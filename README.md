@@ -36,8 +36,8 @@
 
 | Студент | Роль | Основні задачі | Робочі гілки |
 | :--- | :--- | :--- | :--- |
-| **Же** (`@rei968`) | **Team Lead + Backend** | Архітектура, EF Core SQLite, Identity + JWT, Seeder, Reviews/Categories API, Code Review | `feature/zhe-*` |
-| **Ярік** | **Backend + Admin UI** | Products API (фільтри/пагінація), Orders API, SignalR Hub, Адмін-панель на Blazor | `feature/yarik-*` |
+| **Же** (`@rei968`) | **Team Lead + Web API Lead** | Архітектура, спільні DTO, Web API контролери (Auth, Products з фільтрами, Categories, Orders, Reviews), Code Review | `feature/zhe-*` |
+| **Ярік** | **Backend Core & Infrastructure** | База даних (EF Core SQLite), Identity + JWT, Seeder, SignalR Hub, Адмін-панель на Blazor (MudTable) | `feature/yarik-*` |
 | **Льоша** | **Frontend (Blazor)** | Клієнтська вітрина (MudBlazor): каталог, фільтри, кошик, оформлення, кабінет | `feature/lyosha-*` |
 | **Ілля** | **QA / Tester** | Тестовий проєкт xUnit (кошик, залишки, статуси), API тести, документація тестів | `feature/illia-*` |
 
