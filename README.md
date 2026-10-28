@@ -1,34 +1,46 @@
 # 🛒 E-Commerce Platform — Інтернет-магазин
 > **Лабораторна робота №2:** Колективна розробка додатків із використанням Git  
-> **Команда:** Же (TL + Back), Ярік (Back + Admin UI), Льоша (Front), Ілля (QA)
+> **Команда:** Же (TL + Web API Lead), Ярік (Backend Core + Admin WinForms), Льоша (Client WinForms), Ілля (QA / Tester)
 
 ---
 
 ## 📌 Про проєкт
 
-Повноцінна платформа для онлайн-торгівлі із двома інтерфейсами в одному рішенні:
-1. **Клієнтська частина (Вітрина покупця):**
-   - Каталог товарів із динамічною фільтрацією (ціновий діапазон, категорії, бренди).
-   - Інтерактивний кошик покупок з авто-підрахунком суми.
-   - Оформлення замовлення (Checkout).
-   - Система відгуків та рейтингів до кожного товару.
-   - Особистий кабінет покупця з історією замовлень та зміною їх статусів.
-2. **Адмін-панель (Інтерфейс менеджерів):**
-   - Управління каталогом (CRUD товарів і категорій).
+Платформа для онлайн-торгівлі на базі **ASP.NET Core Web API** та десктопного клієнта **Windows Forms (WinForms)** із двома інтерфейсами:
+1. **Клієнтська частина (Вітрина покупця в WinForms):**
+   - Каталог товарів із динамічною фільтрацією (ціновий діапазон, категорії, бренди) через `DataGridView`.
+   - Інтерактивний кошик покупок з авто-підрахунком підсумкової вартості.
+   - Оформлення замовлення (діалог Checkout).
+   - Перегляд відгуків та рейтингу товарів.
+2. **Адмін-панель (Інтерфейс менеджерів у WinForms):**
+   - Управління каталогом (CRUD товарів і категорій через таблиці).
    - Управління залишками на складі (Stock Management).
-   - Обробка замовлень у реальному часі (зміна статусів через SignalR).
+   - Обробка та зміна статусів замовлень у реальному часі через Web API.
 
 ---
 
 ## 🛠️ Стек технологій
 
-- **Backend:** ASP.NET Core Web API (.NET 10 / .NET 8)
-- **Frontend:** Blazor WebAssembly + [MudBlazor](https://mudblazor.com/) (Material UI)
-- **Спільна бібліотека:** Shared Class Library (перевикористання C# DTO, Enums та моделей валідації)
-- **База даних:** Entity Framework Core + SQLite (`shop.db`)
-- **Безпека:** ASP.NET Core Identity + JWT Token Bearer (ролі `Admin`, `Customer`)
-- **Real-time:** SignalR Hub (`OrdersHub`)
-- **Тестування:** xUnit + FluentAssertions + Moq, HTTP API tests
+- **Backend:** ASP.NET Core Web API (.NET 10 / .NET 8) — REST API, маршрутизація, валідація, бізнес-логіка
+- **Frontend / Desktop UI:** Windows Forms (.NET Desktop App) — візуальний Drag-and-Drop дизайнер, `DataGridView`, швидкий запуск без накладних витрат WebAssembly/CSS
+- **Спільна бібліотека:** Shared Class Library (`Shop.Shared`) — пряме перевикористання C# DTO, Enums та моделей валідації між сервером і WinForms-клієнтом
+- **База даних:** Entity Framework Core + SQLite (`shop.db`) — автономна локальна БД
+- **Безпека:** ASP.NET Core Identity + JWT Token Bearer (ролі `Admin`, `Customer`), збереження токена в пам'яті WinForms-клієнта для заголовків `Authorization: Bearer`
+- **Тестування:** xUnit + FluentAssertions + Moq (`Shop.Tests`), HTTP API tests (`api-tests.http`)
+
+### Структура Solution (`Shop.sln`):
+```text
+Shop.sln
+├── src/
+│   ├── Shop.Api/          # ASP.NET Core Web API, EF Core DbContext, Контролери
+│   ├── Shop.WinForms/     # Windows Forms додаток (Вітрина клієнта + Адмін-панель)
+│   └── Shop.Shared/       # Спільні DTO, Enums, моделі запитів/відповідей
+├── tests/
+│   └── Shop.Tests/        # xUnit тести бізнес-логіки та розрахунків
+└── docs/
+    ├── TESTING.md         # Тест-план, чеклісти перевірок та баг-репорти (Ілля)
+    └── GIT_WORKFLOW.md    # Інструкція з гілок, комітів та вирішення конфліктів
+```
 
 ---
 
@@ -36,10 +48,10 @@
 
 | Студент | Роль | Основні задачі | Робочі гілки |
 | :--- | :--- | :--- | :--- |
-| **Же** (`@rei968`) | **Team Lead + Web API Lead** | Архітектура, спільні DTO, Web API контролери (Auth, Products з фільтрами, Categories, Orders, Reviews), Code Review | `feature/zhe-*` |
-| **Ярік** | **Backend Core & Infrastructure** | База даних (EF Core SQLite), Identity + JWT, Seeder, SignalR Hub, Адмін-панель на Blazor (MudTable) | `feature/yarik-*` |
-| **Льоша** | **Frontend (Blazor)** | Клієнтська вітрина (MudBlazor): каталог, фільтри, кошик, оформлення, кабінет | `feature/lyosha-*` |
-| **Ілля** | **QA / Tester** | Тестовий проєкт xUnit (кошик, залишки, статуси), API тести, документація тестів | `feature/illia-*` |
+| **Же** (`@rei968`) | **Team Lead + Web API Lead** | Архітектура, спільні DTO у `Shop.Shared`, всі контролери Web API (`Auth`, `Products` з фільтрами, `Categories`, `Orders`, `Reviews`), Code Review | `feature/zhe-*` |
+| **Ярік** | **Backend Core & Admin WinForms** | База даних (EF Core SQLite), Identity + JWT, `DbSeeder`, Адмін-форма WinForms (`AdminForm.cs`: таблиця товарів, залишків та замовлень) | `feature/yarik-*` |
+| **Льоша** | **Client WinForms UI** | Клієнтська вітрина WinForms (`CustomerForm.cs`): каталог у `DataGridView`, панель фільтрів (ціна, категорія, бренд), кошик, Checkout | `feature/lyosha-*` |
+| **Ілля** | **QA / Tester** | Тестовий проєкт `Shop.Tests` (xUnit: тести кошика, залишків, статусів), файл `api-tests.http`, документація дефектів | `feature/illia-*` |
 
 Детальний план спринтів та завдань: **[TEAM_PLAN_LR2.md](./TEAM_PLAN_LR2.md)**
 
@@ -71,7 +83,7 @@
    ```
 4. **Формат коммітів (Conventional Commits):**
    - `feat: додав компонент фільтрації товарів за ціною`
-   - `fix: виправлено баг з розрахунком знижки`
+   - `fix: виправлено розрахунок суми кошика`
    - `test: додано юніт-тест для перевірки залишків товару`
    - `docs: описано баг-репорт #2`
 5. **Створення Pull Request (PR):**
