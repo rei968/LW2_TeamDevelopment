@@ -1,11 +1,9 @@
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text.Json;
 using Shop.Shared.DTOs;
 using Shop.Shared.DTOs.Auth;
 using Shop.Shared.DTOs.Categories;
 using Shop.Shared.DTOs.Products;
 using Shop.Shared.Enums;
+using Shop.Shared.Services;
 
 namespace Shop.WinForms.Services;
 
@@ -14,37 +12,24 @@ public class ApiClient
     private static ApiClient? _instance;
     public static ApiClient Instance => _instance ??= new ApiClient();
 
-    private readonly HttpClient _httpClient;
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly ShopDataService _dataService = ShopDataService.Instance;
 
-    public string BaseUrl { get; private set; } = "http://localhost:5250";
+    public string BaseUrl { get; private set; } = "Local / JSON Storage";
     public string? Token { get; private set; }
     public string? CurrentEmail { get; private set; }
     public string? CurrentFullName { get; private set; }
     public string? CurrentRole { get; private set; }
 
-    public bool IsAuthenticated => !string.IsNullOrEmpty(Token);
+    public bool IsAuthenticated => !string.IsNullOrEmpty(CurrentEmail);
     public bool IsAdmin => CurrentRole == UserRole.Admin;
 
     public ApiClient()
     {
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(BaseUrl),
-            Timeout = TimeSpan.FromSeconds(15)
-        };
-
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        };
     }
 
     public void SetBaseUrl(string url)
     {
-        if (string.IsNullOrWhiteSpace(url)) return;
-        BaseUrl = url.TrimEnd('/');
-        _httpClient.BaseAddress = new Uri(BaseUrl);
+        BaseUrl = url;
     }
 
     public void SetToken(string token, string email, string fullName, string role)
@@ -53,238 +38,198 @@ public class ApiClient
         CurrentEmail = email;
         CurrentFullName = fullName;
         CurrentRole = role;
-
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", token);
     }
 
-    public void Logout()
+    public void ClearToken()
     {
         Token = null;
         CurrentEmail = null;
         CurrentFullName = null;
         CurrentRole = null;
-        _httpClient.DefaultRequestHeaders.Authorization = null;
     }
 
-    // --- AUTHENTICATION ---
-    public async Task<(bool success, string message)> LoginAsync(string email, string password)
+    public void Logout()
     {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/login", new LoginRequest
-            {
-                Email = email,
-                Password = password
-            });
-
-            if (response.IsSuccessStatusCode)
-            {
-                var auth = await response.Content.ReadFromJsonAsync<AuthResponse>(_jsonOptions);
-                if (auth != null)
-                {
-                    SetToken(auth.Token, auth.Email, auth.FullName, auth.Role);
-                    return (true, "Успішний вхід");
-                }
-            }
-
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, string.IsNullOrWhiteSpace(err) ? "Невірні облікові дані" : err);
-        }
-        catch (Exception ex)
-        {
-            return (false, $"Помилка підключення до сервера: {ex.Message}");
-        }
+        ClearToken();
     }
 
-    // --- PRODUCTS ---
-    public async Task<List<ProductDto>> GetProductsAsync(
-        int? categoryId = null,
-        string? search = null,
-        string? brand = null,
-        decimal? minPrice = null,
-        decimal? maxPrice = null,
-        string? sortBy = null)
+    // --- Авторизація ---
+    public Task<(bool Success, string Message)> LoginAsync(string email, string password)
     {
-        var queryParams = new List<string>();
+        var result = _dataService.Login(email, password);
+        if (result.Success && result.User != null)
+        {
+            SetToken("local-token-xyz", result.User.Email, result.User.FullName, result.User.Role);
+            return Task.FromResult((true, "Успішний вхід"));
+        }
 
-        if (categoryId.HasValue && categoryId.Value > 0)
-            queryParams.Add($"categoryId={categoryId.Value}");
-
-        if (!string.IsNullOrWhiteSpace(search))
-            queryParams.Add($"search={Uri.EscapeDataString(search.Trim())}");
-
-        if (!string.IsNullOrWhiteSpace(brand))
-            queryParams.Add($"brand={Uri.EscapeDataString(brand.Trim())}");
-
-        if (minPrice.HasValue)
-            queryParams.Add($"minPrice={minPrice.Value}");
-
-        if (maxPrice.HasValue)
-            queryParams.Add($"maxPrice={maxPrice.Value}");
-
-        if (!string.IsNullOrWhiteSpace(sortBy))
-            queryParams.Add($"sortBy={sortBy}");
-
-        var url = "/api/products";
-        if (queryParams.Count > 0)
-            url += "?" + string.Join("&", queryParams);
-
-        var response = await _httpClient.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-
-        var products = await response.Content.ReadFromJsonAsync<List<ProductDto>>(_jsonOptions);
-        return products ?? new List<ProductDto>();
+        return Task.FromResult((false, result.Error));
     }
 
-    public async Task<(bool success, string message)> CreateProductAsync(CreateProductDto dto)
+    public Task<(bool Success, string Message)> RegisterAsync(string email, string password, string fullName)
     {
-        try
+        var existing = _dataService.Users.FirstOrDefault(u => u.Email.Equals(email, StringComparison.OrdinalIgnoreCase));
+        if (existing != null)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/products", dto);
-            if (response.IsSuccessStatusCode)
-                return (true, "Товар успішно додано");
+            return Task.FromResult((false, "Користувач з таким Email вже існує"));
+        }
 
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
-        }
-        catch (Exception ex)
+        var newUser = new UserDto
         {
-            return (false, ex.Message);
-        }
+            Id = (_dataService.Users.Count + 1).ToString(),
+            Email = email,
+            FullName = fullName,
+            Role = UserRole.Customer
+        };
+
+        _dataService.Users.Add(newUser);
+        _dataService.SaveData();
+
+        SetToken("local-token-xyz", newUser.Email, newUser.FullName, newUser.Role);
+        return Task.FromResult((true, "Реєстрація успішна"));
     }
 
-    public async Task<(bool success, string message)> UpdateProductAsync(int id, UpdateProductDto dto)
+    // --- Категорії ---
+    public Task<List<CategoryDto>> GetCategoriesAsync()
     {
-        try
-        {
-            var response = await _httpClient.PutAsJsonAsync($"/api/products/{id}", dto);
-            if (response.IsSuccessStatusCode)
-                return (true, "Товар успішно оновлено");
-
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
+        return Task.FromResult(_dataService.Categories.ToList());
     }
 
-    public async Task<(bool success, string message)> DeleteProductAsync(int id)
+    public Task<(bool Success, string Message)> CreateCategoryAsync(CategoryDto dto)
     {
-        try
-        {
-            var response = await _httpClient.DeleteAsync($"/api/products/{id}");
-            if (response.IsSuccessStatusCode)
-                return (true, "Товар успішно видалено");
-
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
+        var newId = _dataService.Categories.Count > 0 ? _dataService.Categories.Max(c => c.Id) + 1 : 1;
+        dto.Id = newId;
+        _dataService.Categories.Add(dto);
+        _dataService.SaveData();
+        return Task.FromResult((true, "Категорію створено"));
     }
 
-    public async Task<(bool success, string message)> UpdateStockAsync(int id, int stockQuantity)
+    public Task<(bool Success, string Message)> CreateCategoryAsync(CreateCategoryDto dto)
     {
-        try
+        var newId = _dataService.Categories.Count > 0 ? _dataService.Categories.Max(c => c.Id) + 1 : 1;
+        var cat = new CategoryDto
         {
-            var response = await _httpClient.PatchAsJsonAsync($"/api/products/{id}/stock", new UpdateStockDto
-            {
-                StockQuantity = stockQuantity
-            });
-
-            if (response.IsSuccessStatusCode)
-                return (true, "Залишок оновлено");
-
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
+            Id = newId,
+            Name = dto.Name,
+            Description = dto.Description
+        };
+        _dataService.Categories.Add(cat);
+        _dataService.SaveData();
+        return Task.FromResult((true, "Категорію створено"));
     }
 
-    // --- CATEGORIES ---
-    public async Task<List<CategoryDto>> GetCategoriesAsync()
+    public Task<(bool Success, string Message)> UpdateCategoryAsync(int id, CategoryDto dto)
     {
-        var response = await _httpClient.GetAsync("/api/categories");
-        response.EnsureSuccessStatusCode();
+        var cat = _dataService.Categories.FirstOrDefault(c => c.Id == id);
+        if (cat == null) return Task.FromResult((false, "Категорію не знайдено"));
 
-        var categories = await response.Content.ReadFromJsonAsync<List<CategoryDto>>(_jsonOptions);
-        return categories ?? new List<CategoryDto>();
+        cat.Name = dto.Name;
+        cat.Description = dto.Description;
+        _dataService.SaveData();
+        return Task.FromResult((true, "Категорію оновлено"));
     }
 
-    public async Task<(bool success, string message)> CreateCategoryAsync(CreateCategoryDto dto)
+    public Task<(bool Success, string Message)> UpdateCategoryAsync(int id, UpdateCategoryDto dto)
     {
-        try
-        {
-            var response = await _httpClient.PostAsJsonAsync("/api/categories", dto);
-            if (response.IsSuccessStatusCode)
-                return (true, "Категорію створено");
+        var cat = _dataService.Categories.FirstOrDefault(c => c.Id == id);
+        if (cat == null) return Task.FromResult((false, "Категорію не знайдено"));
 
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
+        cat.Name = dto.Name;
+        cat.Description = dto.Description;
+        _dataService.SaveData();
+        return Task.FromResult((true, "Категорію оновлено"));
     }
 
-    public async Task<(bool success, string message)> DeleteCategoryAsync(int id)
+    public Task<(bool Success, string Message)> DeleteCategoryAsync(int id)
     {
-        try
-        {
-            var response = await _httpClient.DeleteAsync($"/api/categories/{id}");
-            if (response.IsSuccessStatusCode)
-                return (true, "Категорію видалено");
+        var cat = _dataService.Categories.FirstOrDefault(c => c.Id == id);
+        if (cat == null) return Task.FromResult((false, "Категорію не знайдено"));
 
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
-        }
-        catch (Exception ex)
-        {
-            return (false, ex.Message);
-        }
+        _dataService.Categories.Remove(cat);
+        _dataService.SaveData();
+        return Task.FromResult((true, "Категорію видалено"));
     }
 
-    // --- ORDERS ---
-    public async Task<List<OrderDto>> GetOrdersAsync(OrderStatus? status = null)
+    // --- Товари ---
+    public Task<List<ProductDto>> GetProductsAsync(int? categoryId = null, string? brand = null, decimal? minPrice = null, decimal? maxPrice = null, string? search = null, string? sortBy = null)
     {
-        var url = "/api/orders";
+        var list = _dataService.GetProducts(search, categoryId, brand, maxPrice);
+        if (minPrice.HasValue && minPrice.Value > 0)
+        {
+            list = list.Where(p => p.Price >= minPrice.Value).ToList();
+        }
+
+        if (sortBy == "price_asc") list = list.OrderBy(p => p.Price).ToList();
+        else if (sortBy == "price_desc") list = list.OrderByDescending(p => p.Price).ToList();
+        else if (sortBy == "name") list = list.OrderBy(p => p.Name).ToList();
+
+        return Task.FromResult(list);
+    }
+
+    public Task<ProductDto?> GetProductByIdAsync(int id)
+    {
+        return Task.FromResult(_dataService.GetProductById(id));
+    }
+
+    public Task<(bool Success, string Message)> CreateProductAsync(CreateProductDto dto)
+    {
+        _dataService.AddProduct(dto);
+        return Task.FromResult((true, "Товар успішно створено"));
+    }
+
+    public Task<(bool Success, string Message)> UpdateProductAsync(int id, UpdateProductDto dto)
+    {
+        var ok = _dataService.UpdateProduct(id, dto);
+        return Task.FromResult((ok, ok ? "Товар оновлено" : "Товар не знайдено"));
+    }
+
+    public Task<(bool Success, string Message)> UpdateStockAsync(int id, int stockQuantity)
+    {
+        var ok = _dataService.UpdateStock(id, stockQuantity);
+        return Task.FromResult((ok, ok ? "Залишок оновлено" : "Помилка оновлення"));
+    }
+
+    public Task<(bool Success, string Message)> DeleteProductAsync(int id)
+    {
+        var ok = _dataService.DeleteProduct(id);
+        return Task.FromResult((ok, ok ? "Товар видалено" : "Товар не знайдено"));
+    }
+
+    // --- Замовлення ---
+    public Task<List<OrderDto>> GetOrdersAsync(OrderStatus? status = null)
+    {
+        var orders = _dataService.Orders.AsEnumerable();
         if (status.HasValue)
-            url += $"?status={status.Value}";
-
-        var response = await _httpClient.GetAsync(url);
-        response.EnsureSuccessStatusCode();
-
-        var orders = await response.Content.ReadFromJsonAsync<List<OrderDto>>(_jsonOptions);
-        return orders ?? new List<OrderDto>();
+        {
+            orders = orders.Where(o => o.Status == status.Value);
+        }
+        return Task.FromResult(orders.ToList());
     }
 
-    public async Task<(bool success, string message)> UpdateOrderStatusAsync(int id, OrderStatus status)
+    public Task<List<OrderDto>> GetMyOrdersAsync()
+    {
+        var myEmail = CurrentEmail ?? "customer@shop.com";
+        var orders = _dataService.Orders.Where(o => o.CustomerEmail.Equals(myEmail, StringComparison.OrdinalIgnoreCase)).ToList();
+        return Task.FromResult(orders);
+    }
+
+    public Task<(bool Success, string Message, OrderDto? Order)> CreateOrderAsync(CreateOrderDto dto)
     {
         try
         {
-            var response = await _httpClient.PutAsJsonAsync($"/api/orders/{id}/status", new UpdateOrderStatusDto
-            {
-                Status = status
-            });
-
-            if (response.IsSuccessStatusCode)
-                return (true, "Статус замовлення оновлено");
-
-            var err = await response.Content.ReadAsStringAsync();
-            return (false, err);
+            var userEmail = CurrentEmail ?? "customer@shop.com";
+            var order = _dataService.CreateOrder(dto, userEmail);
+            return Task.FromResult((true, "Замовлення оформлено", (OrderDto?)order));
         }
         catch (Exception ex)
         {
-            return (false, ex.Message);
+            return Task.FromResult((false, ex.Message, (OrderDto?)null));
         }
+    }
+
+    public Task<(bool Success, string Message)> UpdateOrderStatusAsync(int id, OrderStatus newStatus)
+    {
+        var ok = _dataService.UpdateOrderStatus(id, newStatus);
+        return Task.FromResult((ok, ok ? "Статус замовлення оновлено" : "Замовлення не знайдено"));
     }
 }

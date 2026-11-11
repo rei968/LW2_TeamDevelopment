@@ -117,7 +117,7 @@ public class LoginForm : Form
         // Quick login buttons
         _btnQuickAdmin = new Button
         {
-            Text = "⚡ Адмін (admin@store.com)",
+            Text = "⚡ Адмін (admin@shop.com)",
             Location = new Point(40, 325),
             Size = new Size(180, 32),
             BackColor = Color.FromArgb(230, 235, 245),
@@ -127,13 +127,13 @@ public class LoginForm : Form
         };
         _btnQuickAdmin.Click += (s, e) =>
         {
-            _txtEmail.Text = "admin@store.com";
-            _txtPassword.Text = "Admin123!";
+            _txtEmail.Text = "admin@shop.com";
+            _txtPassword.Text = "admin123";
         };
 
         _btnQuickCustomer = new Button
         {
-            Text = "⚡ Клієнт (customer@store.com)",
+            Text = "⚡ Клієнт (customer@shop.com)",
             Location = new Point(225, 325),
             Size = new Size(180, 32),
             BackColor = Color.FromArgb(230, 235, 245),
@@ -143,8 +143,8 @@ public class LoginForm : Form
         };
         _btnQuickCustomer.Click += (s, e) =>
         {
-            _txtEmail.Text = "customer@store.com";
-            _txtPassword.Text = "Customer123!";
+            _txtEmail.Text = "customer@shop.com";
+            _txtPassword.Text = "customer123";
         };
 
         // Status Label
@@ -188,9 +188,18 @@ public class LoginForm : Form
             _lblStatus.Text = $"Успішно! Вітаємо, {ApiClient.Instance.CurrentFullName}";
 
             Hide();
-            var adminForm = new AdminForm();
-            adminForm.FormClosed += (s, args) => Close();
-            adminForm.Show();
+            if (ApiClient.Instance.IsAdmin)
+            {
+                var adminForm = new AdminForm();
+                adminForm.FormClosed += (s, args) => Close();
+                adminForm.Show();
+            }
+            else
+            {
+                var customerForm = new CustomerForm();
+                customerForm.FormClosed += (s, args) => Close();
+                customerForm.Show();
+            }
         }
         else
         {
