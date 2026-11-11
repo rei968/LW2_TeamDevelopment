@@ -1,79 +1,122 @@
-# 🛒 E-Commerce Platform — Інтернет-магазин (Desktop Edition)
+# 🛒 E-Commerce Desktop Platform
 > **Лабораторна робота №2:** Колективна розробка додатків із використанням Git  
-> **Команда (4 студенти):**
-> - 👨‍💻 **Же** (`@rei968`) — Team Lead, Архітектура ядра та сховища даних
-> - 🚀 **Ярік** — Розробник Admin Panel (Панель менеджера)
-> - 🎨 **Льоша** — Розробник Customer Storefront (Вітрина покупця та кошик)
-> - 🧪 **Ілля** — QA Engineer (Автоматизовані тести xUnit, тест-план)
+> **Стек:** C# (.NET 10 / .NET 8), Windows Forms, System.Text.Json (Local Storage), xUnit  
+> **Репозиторій:** [https://github.com/rei968/LW2_TeamDevelopment](https://github.com/rei968/LW2_TeamDevelopment)
 
 ---
 
-## 📌 Про проєкт
+## 📌 1. Про проєкт
 
-Повноцінна десктопна платформа для онлайн-торгівлі на базі **C# .NET Windows Forms** з локальним сховищем даних (**JSON Persistence**). Додаток запускається в один клік у Visual Studio (F5) без необхідності налаштовувати сторонні сервери чи СУБД.
+Цей проєкт — навчальний інтернет-магазин (Desktop-додаток на базі **Windows Forms**).  
+Головна мета лабораторної роботи — **продемонструвати злагоджену командну роботу в Git** (галуження `feature/*`, Pull Requests, рев'ю коду, вирішення merge-конфліктів та тестування).
 
-### Додаток містить 2 повноцінні інтерфейси:
-1. **🛍️ Вітрина покупця (`CustomerForm.cs` — Льоша):**
-   - Каталог товарів із динамічною фільтрацією за ціною, назвою та категоріями.
-   - Інтерактивний кошик покупця (зміна кількості, видалення, авто-підрахунок суми).
-   - Діалог оформлення замовлення (Checkout).
-   - Історія замовлень поточного клієнта.
-2. **⚙️ Адмін-панель менеджера (`AdminForm.cs` — Ярік):**
-   - Управління каталогом (CRUD товарів і категорій через таблицю).
-   - Управління залишками на складі (Stock Management).
-   - Обробка замовлень клієнтів (зміна статусів: `New` -> `Processing` -> `Completed` / `Cancelled`).
+Для максимальної надійності та швидкості запуску архітектуру спрощено:
+- ❌ **Ніяких складних веб-серверів, портів чи мережевих збоїв.**
+- ❌ **Ніяких сторонніх СУБД, паролів до баз даних чи міграцій.**
+- ✅ **Запуск в один клік:** відкрив у Visual Studio $\rightarrow$ натиснув **F5** $\rightarrow$ все відразу працює!
+- ✅ **Збереження даних:** каталог, залишки на складі та замовлення зберігаються локально в файл `shop_data.json` через швидку серіалізацію `System.Text.Json`.
 
 ---
 
-## 🛠️ Стек технологій
+## 👥 2. Розподіл команди та зон відповідальності
 
-- **Мова та платформа:** C# (.NET 10 / .NET 8)
-- **UI:** Windows Forms (WinForms) — візуальний дизайнер, `DataGridView`, швидкий нативний UI
-- **Дані та стан:** Локальне JSON-сховище (`shop_data.json`) на базі `System.Text.Json` із підтримкою початкового сідінгу
-- **Тестування:** xUnit + FluentAssertions (`Shop.Tests`) — 18 юніт-тестів
+У проєкті беруть участь 4 студенти. Кожен відповідає за свій окремий файл і працює у своїй власній гілці в Git:
 
-### Структура Solution (`Shop.sln`):
+| Студент | Роль | Файл для роботи | Гілка в Git | Що робить |
+| :--- | :--- | :--- | :--- | :--- |
+| 👨‍💻 **Же** (`@rei968`) | **Team Lead & Core** | `src/Shop.Shared/Services/ShopService.cs` | `feature/zhe-core-storage` | Архітектура, збереження/завантаження з JSON, організація Merge Conflict, фінальний реліз |
+| 🚀 **Ярік** | **Admin UI Lead** | `src/Shop.WinForms/Forms/AdminForm.cs` | `feature/yarik-admin-panel` | Панель менеджера: склад товарів, зміна залишків, список замовлень клієнтів |
+| 🎨 **Льоша** | **Customer UI Lead** | `src/Shop.WinForms/Forms/CustomerForm.cs` | `feature/lyosha-customer-store` | Вітрина покупця: перегляд товарів, фільтри за ціною/пошуком, інтерактивний кошик, покупка |
+| 🧪 **Ілля** | **QA / Тестувальник** | `tests/Shop.Tests/ShopTests.cs` | `feature/illia-unit-tests` | Написання xUnit-тестів для перевірки кошика та залишків, звіт у `docs/TESTING.md` |
+
+---
+
+## 📂 3. Структура Solution (`Shop.sln`)
+
 ```text
-Shop.sln
+LW2_TeamDevelopment/
+├── Shop.sln                      # Головний файл Solution для Visual Studio
 ├── src/
-│   ├── Shop.Shared/       # Моделі (DTOs), перерахування (Enums) та сервіс збереження даних (ShopDataService)
-│   └── Shop.WinForms/     # Десктопний додаток: Вхід (LoginForm), Вітрина (CustomerForm), Адмінка (AdminForm)
+│   ├── Shop.Shared/              # Спільні класи та сервіс даних
+│   │   ├── Enums/OrderStatus.cs  # Статуси замовлення (New, Processing, Completed, Cancelled)
+│   │   ├── Models/Product.cs     # Модель товару (Id, Name, Price, Category, StockQuantity)
+│   │   ├── Models/Order.cs       # Модель замовлення (Id, Customer, TotalAmount, Status)
+│   │   ├── Models/OrderItem.cs   # Елемент кошика/замовлення
+│   │   └── Services/ShopService.cs # Сервіс з тестовими товарами та методами
+│   └── Shop.WinForms/            # Графічний інтерфейс
+│       ├── Forms/MainForm.cs     # Головне меню запуску (Вибір: Вітрина / Адмінка)
+│       ├── Forms/CustomerForm.cs # Форма магазину для покупця (Зона Льоші)
+│       ├── Forms/AdminForm.cs    # Форма керування складом для менеджера (Зона Яріка)
+│       └── Program.cs            # Точка входу в програму
 ├── tests/
-│   └── Shop.Tests/        # 18 автоматизованих юніт-тестів логіки кошика, залишків та замовлень
+│   └── Shop.Tests/               # Автоматизовані тести xUnit (Зона Іллі)
+│       └── ShopTests.cs          # Тести бізнес-правил
 └── docs/
-    ├── TESTING.md         # Тест-план, матриця перевірок та баг-репорти (Ілля)
-    ├── GIT_WORKFLOW.md    # Інструкція з роботи в Git та розв'язання конфліктів
-    └── ZHE_COORDINATION_BOARD.md # Координаційна дошка задач Тімліда
+    ├── TEAM_PLAN_LR2.md          # 📖 ДЕТАЛЬНІ ПОКРОКОВІ ІНСТРУКЦІЇ ДЛЯ КОЖНОГО СТУДЕНТА
+    ├── GIT_WORKFLOW.md           # 🌿 Шпаргалка з команд Git та сценарій Merge Conflict
+    ├── TESTING.md                # 🧪 Тест-план та журнал багів для тестувальника
+    └── ZHE_COORDINATION_BOARD.md # 📋 Координаційна дошка задач Тімліда
 ```
 
 ---
 
-## 👥 Розподіл завдань у команді
+## 🚀 4. Швидкий старт для кожного розробника
 
-| Студент | Роль | Основні обов'язки | Гілки в Git |
-| :--- | :--- | :--- | :--- |
-| **Же** (`@rei968`) | **Team Lead / Core Lead** | Архітектура Solution, ядро моделей та сервіс збереження `ShopDataService.cs`, Code Review, координація, сценарій Merge Conflict | `feature/zhe-*` |
-| **Ярік** | **Admin UI Lead** | Адмін-панель менеджера (`AdminForm.cs`, форми редагування товарів та категорій, керування складом і замовленнями) | `feature/yarik-admin-winforms` |
-| **Льоша** | **Customer UI Lead** | Вітрина покупця (`CustomerForm.cs`): каталог, панель фільтрів, інтерактивний кошик, оформлення замовлення | `feature/lyosha-customer-store` |
-| **Ілля** | **QA / Tester** | Автоматизовані тести xUnit (`Shop.Tests`), тест-кейси та журнал виявлених дефектів у `docs/TESTING.md` | `feature/illia-unit-tests` |
+### Крок 1. Завантажити проєкт собі на комп'ютер:
+```bash
+git clone https://github.com/rei968/LW2_TeamDevelopment.git
+cd LW2_TeamDevelopment
+git checkout develop
+git pull origin develop
+```
+
+### Крок 2. Відкрити проєкт:
+1. Запустити файл `Shop.sln` у **Visual Studio 2022** (або Rider / VS Code).
+2. Переконатися, що праворуч у Solution Explorer жирним шрифтом виділено проєкт `Shop.WinForms` (якщо ні — правий клік по `Shop.WinForms` $\rightarrow$ **Set as Startup Project**).
+3. Натиснути **F5** (або зелену стрілочку «Start») — відкриється головне вікно з вибором вітрини та адмінки.
+
+### Крок 3. Запустити тести:
+У терміналі:
+```bash
+dotnet test
+```
+Усі тести мають бути зеленими!
 
 ---
 
-## 🚀 Швидкий запуск
+## 🌿 5. Як правильно здавати роботу в Git (Пам'ятка команді)
 
-1. Клонувати репозиторій:
+> [!IMPORTANT]
+> **НІКОЛИ НЕ ПУШТЕ ПРЯМО В ГІЛКУ `main` ЧИ `develop`!**  
+> Кожен студент працює у своїй ізольованій гілці, після чого створює Pull Request на GitHub.
+
+### Стандартний робочий цикл студента:
+
+1. **Створити власну гілку від актуального `develop`:**
    ```bash
-   git clone https://github.com/rei968/LW2_TeamDevelopment.git
-   cd LW2_TeamDevelopment
    git checkout develop
+   git pull origin develop
+   git checkout -b feature/ваше_ім_я-назва_задачі
    ```
-2. Відкрити файл `Shop.sln` у **Visual Studio 2022** (або Rider / VS Code).
-3. Встановити проєкт `Shop.WinForms` як запускаємий (`Set as Startup Project`) і натиснути **F5**.
-4. Для швидкого входу на формі авторизації доступні дві кнопки:
-   - ⚡ **Адмін:** `admin@shop.com` / `admin123` $\rightarrow$ відкриває Адмін-панель
-   - ⚡ **Клієнт:** `customer@shop.com` / `customer123` $\rightarrow$ відкриває Вітрину магазину
-
-5. Запуск юніт-тестів:
+2. **Пишете код у своєму файлі**, запускаєте програму через F5 і перевіряєте, що все працює.
+3. **Робите коміт із чітким описом українською мовою:**
    ```bash
-   dotnet test
+   git add .
+   git commit -m "feat: додав фільтрацію товарів за ціною"
    ```
+4. **Відправляєте свою гілку на GitHub:**
+   ```bash
+   git push -u origin feature/ваше_ім_я-назва_задачі
+   ```
+5. **Створюєте Pull Request (PR):**
+   - Відкриваєте [https://github.com/rei968/LW2_TeamDevelopment](https://github.com/rei968/LW2_TeamDevelopment).
+   - Натискаєте кнопку **Compare & pull request**.
+   - Переконуєтеся, що цільова гілка (base) — **`develop`**.
+   - Тімлід (Же) дивиться ваш код, тисне **Approve** і робить **Merge**.
+
+---
+
+## 📖 Докладна документація для кожного:
+- 👉 **Покрокова інструкція особисто для вас:** [TEAM_PLAN_LR2.md](TEAM_PLAN_LR2.md)
+- 👉 **Шпаргалка з Git та вирішення конфлікту:** [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md)
+- 👉 **Звіт про тестування для Іллі:** [docs/TESTING.md](docs/TESTING.md)
