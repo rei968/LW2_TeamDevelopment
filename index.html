@@ -57,14 +57,22 @@
       <div class="catalog-controls">
         <div class="controls-row">
           <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon" aria-hidden="true">🔍</span>
             <input 
               type="text" 
               id="search-movies" 
               class="form-control search-input" 
               placeholder="Пошук фільмів за назвою або режисером..."
               aria-label="Пошук фільмів"
+              autocomplete="off"
             >
+            <button 
+              type="button" 
+              id="btn-clear-search" 
+              class="btn-clear-search hidden" 
+              aria-label="Очистити пошук" 
+              title="Очистити пошук"
+            >&times;</button>
           </div>
 
           <div class="filter-chips" role="radiogroup" aria-label="Фільтрація за жанром">
