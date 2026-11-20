@@ -1,20 +1,24 @@
 /**
  * CineSphere — Booking & Reservation Module
- *
+ * 
  * 👤 Відповідальний розробник: Ярік (@YaroslavYanushevych)
- * 🌿 Робоча гілка в Git: feature/yarik-booking-logic
+ * 🌿 Робоча гілка: feature/yarik-booking-logic
+ * 
+ * Модуль транзакційного створення броні з валідацією обов'язкових полів,
+ * перевіркою ліміту до 6 квитків та захистом від подвійного бронювання (Double-Booking Prevention).
  */
 
 import { db } from './db.js';
 import { pricing } from './pricing.js';
 
-const MAX_SEATS_PER_ORDER = 6;
+export const MAX_SEATS_PER_ORDER = 6;
 
 /**
- * Генерація унікального цифрового коду бронювання у форматі CS-XXXXX
+ * Генерація унікального номера квитка у форматі CS-XXXXX
  */
 function generateBookingCode() {
-  const existingIds = new Set((db.getBookings ? db.getBookings() : []).map(b => b.id));
+  const existingBookings = db.getBookings ? db.getBookings() : [];
+  const existingIds = new Set(existingBookings.map(b => b.id || b.bookingCode));
   let code;
   do {
     const num = Math.floor(10000 + Math.random() * 90000);
@@ -39,8 +43,10 @@ function resolveSeatTier(rowNumber, hall) {
 }
 
 export const booking = {
+  MAX_SEATS_PER_ORDER,
+
   /**
-   * Отримання списку всіх місць залу для конкретного сеансу з актуальними статусами зайнятості
+   * Отримання повної матриці сидінь залу для конкретного сеансу
    */
   getSeatGrid(showtimeIdOrMovieId, showtimeStr = null) {
     let showtime = null;
@@ -68,15 +74,16 @@ export const booking = {
     const seatsPerRow = hall.seatsPerRow || 8;
     const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtime.id) : [];
 
-    const seats = [];
+    const grid = [];
     for (let r = 1; r <= totalRows; r++) {
+      const rowSeats = [];
       const tier = resolveSeatTier(r, hall);
 
       for (let s = 1; s <= seatsPerRow; s++) {
         const seatId = `R${r}-S${s}`;
         const isOccupied = occupiedSeatIds.includes(seatId);
 
-        seats.push({
+        rowSeats.push({
           id: seatId,
           row: r,
           seat: s,
@@ -85,13 +92,14 @@ export const booking = {
           price: pricing.calculateSeatPrice ? pricing.calculateSeatPrice(tier, hall, showtime) : 150
         });
       }
+      grid.push(rowSeats);
     }
 
-    return seats;
+    return grid;
   },
 
   /**
-   * Створення нового бронювання з валідацією ліміту, даних покупця та захистом від подвійного бронювання
+   * Створення нового бронювання з валідацією
    */
   createReservation(params = {}) {
     const { showtimeId, seats = [], customer = {}, promoCode = null, isStudent = false } = params;
@@ -105,67 +113,88 @@ export const booking = {
     }
 
     if (seats.length > MAX_SEATS_PER_ORDER) {
-      throw new Error(`Максимальна кількість місць на одне замовлення — ${MAX_SEATS_PER_ORDER}.`);
+      throw new Error(`Дозволено бронювати максимум ${MAX_SEATS_PER_ORDER} місць в одному замовленні.`);
     }
 
-    const fullName = (customer.fullName || '').trim();
-    const phone = (customer.phone || '').trim();
-    const email = (customer.email || '').trim();
+    const customerName = (customer.fullName || customer.name || '').trim();
+    const customerPhone = (customer.phone || '').trim();
+    const customerEmail = (customer.email || '').trim();
 
-    if (!fullName) {
-      throw new Error("Будь ласка, введіть ім'я та прізвище покупця.");
+    if (!customerName) {
+      throw new Error("Обов'язково вкажіть ім'я та прізвище замовника.");
     }
 
-    if (!phone) {
-      throw new Error('Будь ласка, введіть контактний номер телефону.');
+    if (!customerPhone) {
+      throw new Error("Обов'язково вкажіть контактний номер телефону.");
     }
 
-    const phoneDigits = phone.replace(/\D/g, '');
+    const phoneDigits = customerPhone.replace(/\D/g, '');
     if (phoneDigits.length < 9) {
       throw new Error('Некоректний формат номера телефону (мінімум 9 цифр).');
     }
 
     // Перевірка на дублікати місць у межах одного замовлення
-    const uniqueSeatIds = new Set(seats.map(s => s.id));
+    const uniqueSeatIds = new Set(seats.map(s => s.id || `R${s.row}-S${s.seat || s.number}`));
     if (uniqueSeatIds.size !== seats.length) {
       throw new Error('Одне й те саме місце не можна обрати двічі в одному замовленні.');
     }
 
     // Захист від подвійного бронювання (Double-Booking Prevention)
     const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtimeId) : [];
-    const conflictingSeat = seats.find(s => occupiedSeatIds.includes(s.id));
-    if (conflictingSeat) {
-      throw new Error(`Місце ${conflictingSeat.id} вже заброньовано іншим користувачем.`);
+    const conflictingSeats = seats.filter(s => {
+      const seatNum = s.seat || s.number;
+      const seatId = s.id || `R${s.row}-S${seatNum}`;
+      return occupiedSeatIds.includes(seatId);
+    });
+
+    if (conflictingSeats.length > 0) {
+      const conflictList = conflictingSeats.map(s => s.id || `Ряд ${s.row}, Місце ${s.seat || s.number}`).join(', ');
+      throw new Error(`Місце ${conflictList} вже зайняте. Будь ласка, оберіть інші місця.`);
     }
 
     const showtime = db.getShowtimeById ? db.getShowtimeById(showtimeId) : null;
     const movie = showtime && db.getMovieById ? db.getMovieById(showtime.movieId) : null;
     const hall = showtime && db.getHallById ? db.getHallById(showtime.hallId) : null;
 
-    const orderPricing = pricing.calculateOrderTotal({
+    const orderPricing = pricing.calculateOrderTotal ? pricing.calculateOrderTotal({
       seats,
       hall,
       showtime,
       promoCode,
       isStudent
-    });
+    }) : { subtotal: 0, discountAmount: 0, total: 0 };
 
     const bookingCode = generateBookingCode();
     const bookingRecord = {
       id: bookingCode,
       bookingCode,
       showtimeId,
-      movieId: movie ? movie.id : null,
-      movieTitle: movie ? movie.title : '',
-      hallName: hall ? hall.name : '',
+      movieId: showtime ? showtime.movieId : (movie ? movie.id : ''),
+      movieTitle: movie ? movie.title : 'Фільм',
+      hallName: hall ? hall.name : 'Кінозал',
       showtimeDate: showtime ? showtime.date : '',
       showtimeTime: showtime ? showtime.time : '',
-      seats: seats.map(s => ({ ...s })),
-      customer: { fullName, email, phone },
+      seats: seats.map(s => {
+        const seatNum = s.seat || s.number;
+        return {
+          id: s.id || `R${s.row}-S${seatNum}`,
+          row: s.row,
+          seat: seatNum,
+          tier: s.tier || 'standard',
+          price: s.price || (pricing.calculateSeatPrice ? pricing.calculateSeatPrice(s.tier || 'standard', hall, showtime) : 150)
+        };
+      }),
+      customer: {
+        fullName: customerName,
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone
+      },
       pricing: {
         subtotal: orderPricing.subtotal,
         discountAmount: orderPricing.discountAmount,
         promoCodeApplied: orderPricing.isPromoValid ? (promoCode || '').trim().toUpperCase() : null,
+        promoLabel: orderPricing.promoLabel,
         totalAmount: orderPricing.total,
         total: orderPricing.total
       },
@@ -174,9 +203,9 @@ export const booking = {
     };
 
     if (db.saveBooking) {
-      const saveResult = db.saveBooking(bookingRecord);
-      if (saveResult && !saveResult.success) {
-        throw new Error(saveResult.error || 'Не вдалося зберегти бронювання.');
+      const saveRes = db.saveBooking(bookingRecord);
+      if (saveRes && saveRes.success === false) {
+        throw new Error(saveRes.error || 'Помилка при збереженні бронювання в базі даних.');
       }
     }
 
@@ -194,12 +223,9 @@ export const booking = {
   },
 
   /**
-   * Скасування існуючого бронювання та повернення місць у статус available
+   * Скасування існуючого бронювання
    */
   cancelReservation(bookingId) {
-    if (!bookingId) {
-      return { success: false, error: 'Не вказано код бронювання.' };
-    }
     if (db.cancelBooking) {
       return db.cancelBooking(bookingId);
     }
@@ -208,20 +234,6 @@ export const booking = {
 
   cancelBooking(bookingId) {
     return this.cancelReservation(bookingId);
-  },
-
-  /**
-   * Повертає зведену інформацію про доступність місць на конкретний сеанс
-   */
-  getShowtimeAvailability(showtimeId) {
-    const seats = this.getSeatGrid(showtimeId);
-    const totalSeats = seats.length;
-    const occupiedSeats = seats.filter(s => s.status === 'occupied').length;
-    return {
-      totalSeats,
-      occupiedSeats,
-      availableSeats: totalSeats - occupiedSeats
-    };
   }
 };
 
@@ -230,5 +242,5 @@ if (typeof window !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { booking };
+  module.exports = { booking, MAX_SEATS_PER_ORDER };
 }

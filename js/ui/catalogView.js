@@ -137,7 +137,9 @@ export const catalogView = {
 
     const filtered = movies.filter(movie => {
       // Genre filter
-      const matchesGenre = genre === 'all' || (Array.isArray(movie.genre) && movie.genre.includes(genre));
+      const matchesGenre = genre === 'all' || 
+        (Array.isArray(movie.genre) ? movie.genre.includes(genre) : (movie.genre || '').includes(genre)) ||
+        (Array.isArray(movie.genres) && movie.genres.includes(genre));
       // Search filter
       const matchesQuery = !query ||
         movie.title.toLowerCase().includes(query) ||
@@ -173,7 +175,8 @@ export const catalogView = {
     // Render movie cards grid
     this.container.innerHTML = filtered.map(movie => {
       const showtimes = db.getShowtimes({ movieId: movie.id });
-      const genreTags = (movie.genre || []).map(g => `<span class="genre-tag">${g}</span>`).join('');
+      const genreList = Array.isArray(movie.genre) ? movie.genre : (Array.isArray(movie.genres) ? movie.genres : (movie.genre || '').split(',').map(s => s.trim()));
+      const genreTags = genreList.map(g => `<span class="genre-tag">${g}</span>`).join('');
 
       const showtimeButtons = showtimes.map(st => {
         const badgeClass = this.getFormatBadgeClass(st.format);

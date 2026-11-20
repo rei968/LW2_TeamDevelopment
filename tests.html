@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
@@ -18,7 +18,11 @@
       --font-mono: 'JetBrains Mono', monospace, Consolas;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background-color: var(--color-bg-primary, #0a0e17);
@@ -31,7 +35,10 @@
         radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.08), transparent 50%);
     }
 
-    .container { max-width: 960px; margin: 0 auto; }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
 
     header {
       display: flex;
@@ -52,10 +59,19 @@
       color: inherit;
     }
 
-    .brand h1 { font-size: 1.5rem; font-weight: 800; }
-    .brand span { color: var(--color-cyan, #38bdf8); }
+    .brand h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
 
-    .header-actions { display: flex; gap: 0.75rem; }
+    .brand span {
+      color: var(--color-cyan, #38bdf8);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
 
     .btn {
       padding: 0.5rem 1rem;
@@ -71,10 +87,29 @@
       border: 1px solid transparent;
     }
 
-    .btn-primary { background: linear-gradient(135deg, #38bdf8, #818cf8); color: #0a0e17; border: none; }
-    .btn-outline { background: transparent; border: 1px solid var(--color-border, #334155); color: var(--color-text-secondary, #94a3b8); }
-    .btn-outline:hover { border-color: var(--color-cyan, #38bdf8); color: var(--color-text-primary, #f8fafc); }
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #0a0e17;
+      border: none;
+    }
 
+    .btn-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--color-border, #334155);
+      color: var(--color-text-secondary, #94a3b8);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--color-cyan, #38bdf8);
+      color: var(--color-text-primary, #f8fafc);
+    }
+
+    /* Summary Bar */
     .summary-card {
       background: var(--test-card-bg);
       border: 1px solid var(--color-border, #1e293b);
@@ -87,14 +122,32 @@
       gap: 1.5rem;
     }
 
-    .metric-box { display: flex; flex-direction: column; gap: 0.25rem; }
-    .metric-label { font-size: 0.8125rem; color: var(--color-text-muted, #64748b); text-transform: uppercase; font-weight: 600; }
-    .metric-value { font-size: 2rem; font-weight: 800; font-family: var(--font-mono); }
+    .metric-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted, #64748b);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--font-mono);
+    }
+
     .metric-value.pass { color: var(--test-pass); }
     .metric-value.fail { color: var(--test-fail); }
     .metric-value.total { color: var(--color-cyan, #38bdf8); }
     .metric-value.time { color: var(--color-text-secondary, #94a3b8); font-size: 1.5rem; }
 
+    /* Test Suites */
     .suite-card {
       background: var(--test-card-bg);
       border: 1px solid var(--color-border, #1e293b);
@@ -113,10 +166,24 @@
       align-items: center;
     }
 
-    .suite-title { font-size: 1.125rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-    .suite-stats { font-size: 0.8125rem; font-family: var(--font-mono); color: var(--color-text-secondary, #94a3b8); }
+    .suite-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-    .test-list { list-style: none; }
+    .suite-stats {
+      font-size: 0.8125rem;
+      font-family: var(--font-mono);
+      color: var(--color-text-secondary, #94a3b8);
+    }
+
+    .test-list {
+      list-style: none;
+    }
+
     .test-item {
       padding: 0.875rem 1.25rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
@@ -124,8 +191,21 @@
       align-items: flex-start;
       gap: 0.75rem;
       font-size: 0.9375rem;
+      transition: background 0.15s ease;
     }
-    .test-item:last-child { border-bottom: none; }
+
+    .test-item:last-child {
+      border-bottom: none;
+    }
+
+    .test-item.pass {
+      background: transparent;
+    }
+
+    .test-item.fail {
+      background: var(--test-fail-bg);
+    }
+
     .test-status-badge {
       font-size: 0.75rem;
       font-weight: 700;
@@ -135,12 +215,35 @@
       text-transform: uppercase;
       flex-shrink: 0;
     }
-    .status-pass { background: var(--test-pass-bg); color: var(--test-pass); border: 1px solid rgba(16, 185, 129, 0.3); }
-    .status-fail { background: var(--test-fail-bg); color: var(--test-fail); border: 1px solid rgba(239, 68, 68, 0.4); }
 
-    .test-content { flex: 1; }
-    .test-title { color: var(--color-text-primary, #f8fafc); line-height: 1.4; }
-    .test-duration { font-size: 0.75rem; color: var(--color-text-muted, #64748b); font-family: var(--font-mono); margin-left: 0.5rem; }
+    .status-pass {
+      background: var(--test-pass-bg);
+      color: var(--test-pass);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-fail {
+      background: var(--test-fail-bg);
+      color: var(--test-fail);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .test-content {
+      flex: 1;
+    }
+
+    .test-title {
+      color: var(--color-text-primary, #f8fafc);
+      line-height: 1.4;
+    }
+
+    .test-duration {
+      font-size: 0.75rem;
+      color: var(--color-text-muted, #64748b);
+      font-family: var(--font-mono);
+      margin-left: 0.5rem;
+    }
+
     .test-error {
       margin-top: 0.5rem;
       padding: 0.625rem;
@@ -171,14 +274,12 @@
         <span style="font-size: 1.75rem;">🎬</span>
         <div>
           <h1>Cine<span>Sphere</span> QA Tests</h1>
-          <div style="font-size: 0.8125rem; color: var(--color-text-muted);">
-            👤 Відповідальний тестувальник: <strong>Ілля</strong> (Гілка: <code>feature/illia-qa-tests</code>)
-          </div>
+          <div style="font-size: 0.8125rem; color: var(--color-text-muted);">Автоматизована перевірка бізнес-правил та збереження даних</div>
         </div>
       </a>
       <div class="header-actions">
         <a href="index.html" class="btn btn-outline">← До афіші</a>
-        <button id="btn-rerun" class="btn btn-primary">🔄 Запустити тести</button>
+        <button id="btn-rerun" class="btn btn-primary">🔄 Запустити знову</button>
       </div>
     </header>
 
@@ -210,18 +311,18 @@
     </main>
 
     <footer>
-      <p>Лабораторна робота №2 • Зона QA: <strong>Ілля</strong></p>
+      <p>Лабораторна робота №2 • Студент-тестувальник: <strong>Ілля (QA Engineer)</strong></p>
       <p style="margin-top: 4px;">Модулі для тестування: <code>js/pricing.js</code>, <code>js/booking.js</code>, <code>js/db.js</code></p>
     </footer>
   </div>
 
-  <!-- Test Framework & Test Suites for Illia -->
+  <!-- Test Suite Script -->
   <script type="module">
     import { db } from './js/db.js';
     import { pricing, calculateTicketPrice, calculateSeatPrice, calculateOrderTotal, applyPromo } from './js/pricing.js';
     import { booking } from './js/booking.js';
 
-    // Вбудований мікро-раннер тестів
+    // Minimal In-Browser Test Framework
     class MiniTestRunner {
       constructor() {
         this.suites = [];
@@ -246,15 +347,18 @@
         let total = 0;
         let passed = 0;
         let failed = 0;
+
         const results = [];
 
         for (const suite of this.suites) {
           const suiteResult = { title: suite.title, tests: [], passed: 0, failed: 0 };
+          
           for (const test of suite.tests) {
             total++;
             const tStart = performance.now();
             let testPass = true;
             let errorMsg = null;
+
             try {
               await test.fn();
               passed++;
@@ -265,6 +369,7 @@
               suiteResult.failed++;
               errorMsg = err.message || String(err);
             }
+
             const tEnd = performance.now();
             suiteResult.tests.push({
               title: test.title,
@@ -273,6 +378,7 @@
               error: errorMsg
             });
           }
+
           results.push(suiteResult);
         }
 
@@ -287,73 +393,355 @@
       }
     }
 
+    // Assertions helper
     function expect(actual) {
       return {
         toBe(expected) {
-          if (actual !== expected) throw new Error(`Очікувалось: ${JSON.stringify(expected)}, отримано: ${JSON.stringify(actual)}`);
+          if (actual !== expected) {
+            throw new Error(`Очікувалось: ${JSON.stringify(expected)}, отримано: ${JSON.stringify(actual)}`);
+          }
         },
         toEqual(expected) {
           const a = JSON.stringify(actual);
           const b = JSON.stringify(expected);
-          if (a !== b) throw new Error(`Об'єкти не рівні!\nОчікувалось: ${b}\nОтримано: ${a}`);
-        },
-        toBeTruthy() {
-          if (!actual) throw new Error(`Очікувалось truthy, отримано: ${actual}`);
+          if (a !== b) {
+            throw new Error(`Об'єкти не рівні!\nОчікувалось: ${b}\nОтримано: ${a}`);
+          }
         },
         toBeGreaterThan(expected) {
-          if (!(actual > expected)) throw new Error(`Очікувалось > ${expected}, отримано: ${actual}`);
+          if (!(actual > expected)) {
+            throw new Error(`Очікувалось число більше за ${expected}, отримано: ${actual}`);
+          }
+        },
+        toBeLessThanOrEqual(expected) {
+          if (!(actual <= expected)) {
+            throw new Error(`Очікувалось число <= ${expected}, отримано: ${actual}`);
+          }
+        },
+        toBeTruthy() {
+          if (!actual) {
+            throw new Error(`Очікувалось істинне значення (truthy), отримано: ${actual}`);
+          }
+        },
+        toBeFalsy() {
+          if (actual) {
+            throw new Error(`Очікувалось хибне значення (falsy), отримано: ${actual}`);
+          }
         },
         toThrow(expectedText) {
+          if (typeof actual !== 'function') {
+            throw new Error('expect(fn).toThrow() вимагає функцію');
+          }
           let threw = false;
-          let err = null;
-          try { actual(); } catch (e) { threw = true; err = e; }
-          if (!threw) throw new Error('Очікувалась помилка (Exception), але виклик пройшов успішно');
-          if (expectedText && !err.message.includes(expectedText)) {
-            throw new Error(`Помилка виникла, але повідомлення "${err.message}" не містить "${expectedText}"`);
+          let thrownError = null;
+          try {
+            actual();
+          } catch (e) {
+            threw = true;
+            thrownError = e;
+          }
+          if (!threw) {
+            throw new Error('Очікувалась помилка (Exception), але виклик пройшов успішно');
+          }
+          if (expectedText && !thrownError.message.includes(expectedText)) {
+            throw new Error(`Помилка виникла, але повідомлення "${thrownError.message}" не містить "${expectedText}"`);
           }
         }
       };
     }
 
-    /**
-     * 📌 ЗОНА ВІДПОВІДАЛЬНОСТІ ІЛЛІ (QA ENGINEER)
-     * Гілка: feature/illia-qa-tests
-     * 
-     * TODO: Ілля пише тести для перевірки коду Яріка та бази даних:
-     */
+    // Define All QA Test Suites
     function setupTests(runner) {
-      // Базовий смоук-тест структури даних
-      runner.describe('1. Базові перевірки каталогу (Smoke Tests)', () => {
-        runner.it('Каталог фільмів завантажується зі сховища', () => {
+      // 1. Модуль розрахунку цін (js/pricing.js)
+      runner.describe('1. Модуль ціноутворення (js/pricing.js)', () => {
+        runner.it('Базова ціна для стандартного місця повертається без націнки', () => {
+          const price = calculateTicketPrice(150, 'standard', false);
+          expect(price).toBe(150);
+        });
+
+        runner.it('Націнка на VIP-місце становить +50 грн', () => {
+          const standard = calculateTicketPrice(150, 'standard', false);
+          const vip = calculateTicketPrice(150, 'vip', false);
+          expect(vip).toBe(standard + 50);
+        });
+
+        runner.it('Націнка на категорію "Дивани" становить +100 грн', () => {
+          const standard = calculateTicketPrice(150, 'standard', false);
+          const couches = calculateTicketPrice(150, 'couches', false);
+          expect(couches).toBe(standard + 100);
+        });
+
+        runner.it('Студентська знижка (15%) коректно зменшує вартість квитка', () => {
+          const regular = calculateTicketPrice(200, 'standard', false);
+          const student = calculateTicketPrice(200, 'standard', true);
+          // 200 * 0.85 = 170
+          expect(student).toBe(170);
+        });
+
+        runner.it('Промокод STUDENT10 надає 10% знижки на суму замовлення', () => {
+          const res = applyPromo('STUDENT10', 400);
+          expect(res.valid).toBe(true);
+          expect(res.discountAmount).toBe(40);
+          expect(res.total).toBe(360);
+        });
+
+        runner.it('Промокод CINE20 надає 20% знижки на суму замовлення', () => {
+          const res = applyPromo('CINE20', 500);
+          expect(res.valid).toBe(true);
+          expect(res.discountAmount).toBe(100);
+          expect(res.total).toBe(400);
+        });
+
+        runner.it('Недійсний промокод не застосовує знижку і зберігає початкову суму', () => {
+          const res = applyPromo('UNKNOWN999', 300);
+          expect(res.valid).toBe(false);
+          expect(res.discountAmount).toBe(0);
+          expect(res.total).toBe(300);
+        });
+
+        runner.it('calculateOrderTotal підсумовує ціни кількох обраних місць', () => {
+          const seats = [
+            { id: 'R1-S1', tier: 'standard', price: 150 },
+            { id: 'R1-S2', tier: 'standard', price: 200 }
+          ];
+          const summary = calculateOrderTotal({ seats });
+          expect(summary.subtotal).toBe(350);
+          expect(summary.total).toBe(350);
+        });
+
+        runner.it('Застосування промокоду CINE20 при замовленні на 3 місця надає 20% знижки на всю суму', () => {
+          const seats = [
+            { id: 'R1-S1', tier: 'standard', price: 150 },
+            { id: 'R1-S2', tier: 'standard', price: 150 },
+            { id: 'R1-S3', tier: 'standard', price: 150 }
+          ];
+          const summary = calculateOrderTotal({
+            seats,
+            promoCode: 'CINE20'
+          });
+          // 150 * 3 = 450 грн; знижка 20% = 90 грн; разом = 360 грн
+          expect(summary.subtotal).toBe(450);
+          expect(summary.isPromoValid).toBe(true);
+          expect(summary.discountAmount).toBe(90);
+          expect(summary.total).toBe(360);
+        });
+      });
+
+      // 2. Модуль бронювання та валідації (js/booking.js)
+      runner.describe('2. Модуль бронювання (js/booking.js)', () => {
+        runner.it('Ліміт вибору місць: заборонено бронювати більше 6 місць за одне замовлення', () => {
+          const showtimes = db.getShowtimes();
+          const showtimeId = showtimes[0].id;
+          const seats = [
+            { id: 'R1-S1', row: 1, number: 1, tier: 'standard' },
+            { id: 'R1-S2', row: 1, number: 2, tier: 'standard' },
+            { id: 'R1-S3', row: 1, number: 3, tier: 'standard' },
+            { id: 'R1-S4', row: 1, number: 4, tier: 'standard' },
+            { id: 'R1-S5', row: 1, number: 5, tier: 'standard' },
+            { id: 'R1-S6', row: 1, number: 6, tier: 'standard' },
+            { id: 'R1-S7', row: 1, number: 7, tier: 'standard' } // 7-ме місце
+          ];
+
+          expect(() => {
+            booking.createReservation({
+              showtimeId,
+              seats,
+              customer: { fullName: 'Тестовий Клієнт', phone: '+380501112233' }
+            });
+          }).toThrow('більше 6 місць');
+        });
+
+        runner.it('Валідація обов’язкових полів клієнта (ім’я та прізвище)', () => {
+          const showtimeId = db.getShowtimes()[0].id;
+          const seats = [{ id: 'R1-S1', row: 1, number: 1, tier: 'standard' }];
+
+          expect(() => {
+            booking.createReservation({
+              showtimeId,
+              seats,
+              customer: { fullName: '', phone: '' }
+            });
+          }).toThrow("ім'я");
+        });
+
+        runner.it('Валідація обов’язкового контактного номеру телефону (заборона порожнього значення)', () => {
+          const showtimeId = db.getShowtimes()[0].id;
+          const seats = [{ id: 'R1-S1', row: 1, number: 1, tier: 'standard' }];
+
+          expect(() => {
+            booking.createReservation({
+              showtimeId,
+              seats,
+              customer: { fullName: 'Ілля QA', phone: '' }
+            });
+          }).toThrow("телефон");
+        });
+
+        runner.it('Генерація коду бронювання у форматі CS-XXXXX', () => {
+          const showtimeId = db.getShowtimes()[0].id;
+          const occupied = db.getOccupiedSeatIds(showtimeId);
+          let seatNumber = 1;
+          while (occupied.includes(`R5-S${seatNumber}`) && seatNumber < 10) {
+            seatNumber++;
+          }
+          const seats = [{ id: `R5-S${seatNumber}`, row: 5, number: seatNumber, tier: 'standard', price: 150 }];
+          
+          const result = booking.createReservation({
+            showtimeId,
+            seats,
+            customer: { fullName: 'Ілля QA', phone: '+380509998877' }
+          });
+
+          expect(result.success).toBe(true);
+          const bookingCode = result.booking.bookingCode || result.booking.id;
+          expect(bookingCode.startsWith('CS-')).toBe(true);
+          expect(bookingCode.length).toBe(8); // CS- + 5 цифр
+        });
+
+        runner.it('Захист від подвійного бронювання (Double-Booking Prevention)', () => {
+          const showtimeId = db.getShowtimes()[0].id;
+          const seatId = 'R2-S3';
+          const seats = [{ id: seatId, row: 2, number: 3, tier: 'standard', price: 150 }];
+
+          // Перше бронювання
+          booking.createReservation({
+            showtimeId,
+            seats,
+            customer: { fullName: 'Перший Клієнт', phone: '+380501234567' }
+          });
+
+          // Спроба забронювати це ж саме місце вдруге має викинути помилку
+          expect(() => {
+            booking.createReservation({
+              showtimeId,
+              seats,
+              customer: { fullName: 'Другий Клієнт', phone: '+380507654321' }
+            });
+          }).toThrow('вже заброньовано');
+        });
+
+        runner.it('Скасування бронювання вивільняє місця для повторного вибору', () => {
+          const showtimeId = db.getShowtimes()[0].id;
+          const seatId = 'R3-S4';
+          const seats = [{ id: seatId, row: 3, number: 4, tier: 'standard', price: 150 }];
+
+          const res = booking.createReservation({
+            showtimeId,
+            seats,
+            customer: { fullName: 'Клієнт на скасування', phone: '+380500000000' }
+          });
+
+          const cancelRes = booking.cancelReservation(res.booking.id);
+          expect(cancelRes.success).toBe(true);
+
+          // Тепер це ж місце має бути знову доступне
+          const rebookRes = booking.createReservation({
+            showtimeId,
+            seats,
+            customer: { fullName: 'Новий Клієнт', phone: '+380501111111' }
+          });
+          expect(rebookRes.success).toBe(true);
+        });
+      });
+
+      // 3. База даних та сховище LocalStorage (js/db.js)
+      runner.describe('3. Сховище даних LocalStorage (js/db.js)', () => {
+        runner.it('Початковий сідер створює каталог фільмів у сховищі', () => {
           const movies = db.getMovies();
-          expect(Array.isArray(movies)).toBeTruthy();
+          expect(Array.isArray(movies)).toBe(true);
           expect(movies.length).toBeGreaterThan(0);
         });
+
+        runner.it('Кожен фільм має обов’язкові атрибути (id, title, genre, duration)', () => {
+          const movies = db.getMovies();
+          const first = movies[0];
+          expect(typeof first.id).toBe('string');
+          expect(typeof first.title).toBe('string');
+          expect(Array.isArray(first.genre) || typeof first.genre === 'string').toBe(true);
+          expect(first.duration).toBeGreaterThan(0);
+        });
+
+        runner.it('Пошук фільму за ідентифікатором знаходить правильний об’єкт', () => {
+          const movies = db.getMovies();
+          const target = movies[0];
+          const found = db.getMovieById(target.id);
+          expect(found.title).toBe(target.title);
+        });
+
+        runner.it('База даних надає схеми кінозалів із налаштованими категоріями місць', () => {
+          const halls = db.getHalls();
+          expect(halls.length).toBeGreaterThan(0);
+          const hall = halls[0];
+          const rowsCount = hall.totalRows || hall.rows;
+          expect(rowsCount).toBeGreaterThan(0);
+          expect(hall.seatsPerRow).toBeGreaterThan(0);
+          expect(Boolean(hall.seatTiers)).toBe(true);
+        });
+
+        runner.it('Історія бронювань оновлюється при створенні нового квитка', () => {
+          const initialCount = db.getBookings().length;
+          const showtimeId = db.getShowtimes()[0].id;
+          const occupied = db.getOccupiedSeatIds(showtimeId);
+          let seatNum = 1;
+          while (occupied.includes(`R4-S${seatNum}`) && seatNum < 10) {
+            seatNum++;
+          }
+          const seats = [{ id: `R4-S${seatNum}`, row: 4, number: seatNum, tier: 'standard', price: 150 }];
+
+          booking.createReservation({
+            showtimeId,
+            seats,
+            customer: { fullName: 'Історія QA', phone: '+380502223344' }
+          });
+
+          const newCount = db.getBookings().length;
+          expect(newCount).toBe(initialCount + 1);
+        });
       });
 
-      // TODO (Ілля): Додати тести для модуля ціноутворення (js/pricing.js)
-      runner.describe('2. Тести ціноутворення (TODO: Ілля)', () => {
-        runner.it('Базова ціна повертає числове значення', () => {
-          const price = calculateTicketPrice(150, 'standard', false);
-          expect(typeof price).toBe('number');
+      // 4. Регресійні тести узгодження конфлікту злиття (Merge Conflict Regression)
+      runner.describe('4. Регресійні тести цінових правил (Merge Conflict Target)', () => {
+        runner.it('Розрахунок вартості для замовлення з VIP-місцем та промокодом працює коректно', () => {
+          const seats = [
+            { id: 'R1-VIP', tier: 'vip', price: 200 }
+          ];
+          const summary = calculateOrderTotal({
+            seats,
+            promoCode: 'STUDENT10'
+          });
+          // 200 - 10% = 180
+          expect(summary.subtotal).toBe(200);
+          expect(summary.discountAmount).toBe(20);
+          expect(summary.total).toBe(180);
         });
-        // TODO: Написати перевірку VIP націнки (+50 грн)
-        // TODO: Написати перевірку студентської знижки (15%)
-        // TODO: Написати перевірку промокодів (STUDENT10, CINE20)
-      });
 
-      // TODO (Ілля): Додати тести для модуля бронювання (js/booking.js)
-      runner.describe('3. Тести бронювання та валідації (TODO: Ілля)', () => {
-        runner.it('Сітка залу генерує масив рядів', () => {
-          const grid = booking.getSeatGrid('showtime-dune-1');
-          expect(Array.isArray(grid)).toBeTruthy();
+        runner.it('Групова знижка 15% застосовується автоматично для замовлень від 3 квитків (правило Же)', () => {
+          const seats = [
+            { id: 'R1-S1', tier: 'standard', price: 100 },
+            { id: 'R1-S2', tier: 'standard', price: 100 },
+            { id: 'R1-S3', tier: 'standard', price: 100 }
+          ];
+          const summary = calculateOrderTotal({ seats });
+          // 300 - 15% = 255
+          expect(summary.subtotal).toBe(300);
+          expect(summary.discountAmount).toBe(45);
+          expect(summary.total).toBe(255);
         });
-        // TODO: Написати перевірку ліміту (заборона більше 6 місць)
-        // TODO: Написати перевірку валідації імені та телефону клієнта
-        // TODO: Написати перевірку захисту від double-booking
+
+        runner.it('VIP-знижка 10% застосовується на замовлення з VIP-місцем без промокоду (правило Яріка)', () => {
+          const seats = [
+            { id: 'R1-VIP', tier: 'vip', price: 200 }
+          ];
+          const summary = calculateOrderTotal({ seats });
+          // 200 - 10% = 180
+          expect(summary.subtotal).toBe(200);
+          expect(summary.discountAmount).toBe(20);
+          expect(summary.total).toBe(180);
+        });
       });
     }
 
+    // UI Render of Test Results
     function renderResults(report) {
       document.getElementById('metric-total').textContent = report.total;
       document.getElementById('metric-passed').textContent = report.passed;
@@ -386,6 +774,7 @@
         suite.tests.forEach(test => {
           const item = document.createElement('li');
           item.className = `test-item ${test.passed ? 'pass' : 'fail'}`;
+
           item.innerHTML = `
             <span class="test-status-badge ${test.passed ? 'status-pass' : 'status-fail'}">
               ${test.passed ? 'PASS' : 'FAIL'}
@@ -398,6 +787,7 @@
               ${test.error ? `<div class="test-error">${test.error}</div>` : ''}
             </div>
           `;
+
           list.appendChild(item);
         });
 
@@ -407,6 +797,7 @@
       });
     }
 
+    // Run test cycle
     async function startTestExecution() {
       const runner = new MiniTestRunner();
       setupTests(runner);
@@ -415,6 +806,8 @@
     }
 
     document.getElementById('btn-rerun').addEventListener('click', startTestExecution);
+
+    // Initial run
     startTestExecution();
   </script>
 </body>

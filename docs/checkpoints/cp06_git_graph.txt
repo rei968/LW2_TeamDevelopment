@@ -1,0 +1,30 @@
+=== CHECKPOINT 06: GIT LOG GRAPH EVIDENCE ===
+Timestamp: 2026-11-20T13:47:03Z
+Branch: develop
+Command: git log --graph --oneline -n 16
+
+*   bdab8f2 Merge branch 'feature/zhe-bulk-discount' into develop
+|\  
+| *   d860cc9 fix(merge): успішно вирішено конфлікт правил знижок у pricing.js
+| |\  
+| |/  
+|/|   
+* |   427544c Merge branch 'feature/yarik-vip-discount' into develop
+|\ \  
+| * | f6746c4 feat(pricing): додано знижку 10% на замовлення з VIP-місцями
+|/ /  
+| * 80bcb9d feat(pricing): додано знижку 15% для замовлень від 3 квитків
+|/  
+*   9ba4baf Merge branch 'feature/zhe-catalog-ui' into develop
+|\  
+| * 56de91c feat(catalog): enhance catalog showcase with hover zoom, format badges, and search reset
+|/  
+* a7d6744 chore(skeleton): prepare clean logic and QA test skeletons with TODOs for Yarik and Illia
+* bf71688 docs: establish full LR2 team workflow, technology roles, tests runner and documentation
+*   33d86ed Merge branch 'feature/core-db' into develop
+|\  
+| * 26a48b8 feat(core): scaffold CineSphere architecture, LocalStorage DB, and cinema showcase UI
+|/  
+* d19fead chore: clean deprecated C# Shop project files for CineSphere migration
+* 20c9619 docs: comprehensive personal guides, git workflow, and testing docs for all team members
+* e73ca9b chore: establish clean minimal project skeleton for 4 team members

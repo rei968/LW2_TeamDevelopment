@@ -1,0 +1,14 @@
+=== CHECKPOINT 04: RAW CONFLICT MARKERS IN js/pricing.js ===
+File: c:\Users\comfy\Desktop\LW2_TeamDevelopment\js\pricing.js
+Function: calculateOrderTotal
+
+<<<<<<< HEAD
+  if (seats.length >= 3) {
+    discountRate = 0.15; // Групова знижка 15% для компаній від 3 осіб (Же)
+  }
+=======
+  const hasVipSeats = seats.some(s => s.tier === 'vip');
+  if (hasVipSeats) {
+    discountRate = 0.10; // Знижка 10% для поціновувачів комфорту (Ярік)
+  }
+>>>>>>> develop

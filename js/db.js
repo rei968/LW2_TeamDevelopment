@@ -107,6 +107,7 @@ const SEED_HALLS = [
   {
     id: 'hall-imax',
     name: 'IMAX Laser Hall',
+    rows: 8,
     totalRows: 8,
     seatsPerRow: 10,
     seatTiers: {
@@ -118,6 +119,7 @@ const SEED_HALLS = [
   {
     id: 'hall-standard-1',
     name: 'Chamber Hall (Зал 1)',
+    rows: 6,
     totalRows: 6,
     seatsPerRow: 8,
     seatTiers: {
@@ -327,7 +329,17 @@ export const db = {
   // Movies
   getMovies() {
     this.init();
-    return readStorage(STORAGE_KEYS.MOVIES, []);
+    const raw = readStorage(STORAGE_KEYS.MOVIES, []);
+    return raw.map(m => {
+      const genreStr = Array.isArray(m.genre) ? m.genre.join(', ') : (m.genre || '');
+      const genresArr = Array.isArray(m.genre) ? m.genre : genreStr.split(',').map(s => s.trim());
+      return {
+        ...m,
+        genre: genreStr,
+        genres: genresArr,
+        duration: m.duration || m.durationMinutes
+      };
+    });
   },
 
   getMovieById(id) {
@@ -338,7 +350,12 @@ export const db = {
   // Halls
   getHalls() {
     this.init();
-    return readStorage(STORAGE_KEYS.HALLS, []);
+    const raw = readStorage(STORAGE_KEYS.HALLS, []);
+    return raw.map(h => ({
+      ...h,
+      rows: h.rows || h.totalRows || 6,
+      totalRows: h.totalRows || h.rows || 6
+    }));
   },
 
   getHallById(id) {
