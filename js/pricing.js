@@ -1,47 +1,48 @@
 /**
  * CineSphere — Ticket Pricing Module
- * Baseline pricing calculation engine ready for enhancement and merge conflict simulation.
+ * 
+ * 👤 Відповідальний розробник: Ярік (@YaroslavYanushevych)
+ * 🌿 Робоча гілка в Git: feature/yarik-booking-logic
+ * 
+ * 📌 Завдання для Яріка:
+ * 1. calculateTicketPrice(basePrice, seatType, isStudent) — розрахунок вартості квитка з націнками
+ *    (VIP +50 грн, Дивани +100 грн) та студентською знижкою 15%.
+ * 2. calculateSeatPrice(tier, hall, showtime) — визначення вартості конкретного крісла.
+ * 3. calculateOrderTotal(params) — розрахунок повної суми замовлення, знижок та промокодів.
+ * 4. applyPromo(promoCode, subtotal) — перевірка та застосування промокодів (STUDENT10, CINE20).
+ * 5. Змоделювати Merge Conflict у функції calculateOrderTotal згідно з docs/GIT_WORKFLOW.md!
  */
 
-// Registered Promo Codes
-const PROMO_CODES = {
+// Зареєстровані промокоди кінотеатру
+export const PROMO_CODES = {
   'STUDENT10': { discountPercent: 10, label: 'Студентська знижка (-10%)' },
   'CINE20': { discountPercent: 20, label: 'Промокод кіномана (-20%)' }
 };
 
 /**
- * Baseline Ticket Price Calculator
- * Supports both positional args: (basePrice, seatType, isStudent)
- * and object config: ({ basePrice, seatTier, isStudent })
+ * Розрахунок вартості одного квитка
+ * TODO (Ярік): Реалізувати націнки за категорію сидіння та знижку для студентів
  */
-export function calculateTicketPrice(basePrice, seatType = 'standard', isStudent = false) {
-  // Support object parameter style
+export function calculateTicketPrice(basePrice = 150, seatType = 'standard', isStudent = false) {
+  // Підтримка виклику як об'єктом, так і позиційними аргументами
   if (typeof basePrice === 'object' && basePrice !== null) {
     const config = basePrice;
-    basePrice = config.basePrice || 0;
+    basePrice = config.basePrice || 150;
     seatType = config.seatTier || config.seatType || 'standard';
     isStudent = Boolean(config.isStudent);
   }
 
-  let price = Number(basePrice) || 0;
+  let price = Number(basePrice) || 150;
 
-  // Baseline tier surcharge
-  if (seatType === 'vip') {
-    price += 50;
-  } else if (seatType === 'couches') {
-    price += 100;
-  }
-
-  // Baseline student discount
-  if (isStudent) {
-    price *= 0.85;
-  }
+  // TODO (Ярік): Додати націнки для VIP (+50) та Couches (+100)
+  // TODO (Ярік): Додати застосування студентської знижки (15%)
 
   return Math.round(price);
 }
 
 /**
- * Calculate individual seat price based on hall tier definition and showtime modifier
+ * Розрахунок ціни окремого місця з урахуванням конфігурації залу та сеансу
+ * TODO (Ярік): Отримати базову ціну категорії з hall.seatTiers
  */
 export function calculateSeatPrice(tier = 'standard', hall = null, showtime = null) {
   let basePrice = 150;
@@ -57,7 +58,9 @@ export function calculateSeatPrice(tier = 'standard', hall = null, showtime = nu
 }
 
 /**
- * Calculate total order summary for a set of selected seats
+ * Підрахунок загальної суми замовлення
+ * TODO (Ярік): Реалізувати підсумовування цін обраних місць, застосування знижок та промокодів
+ * ⚠️ УВАГА: У цій функції Ярік та Же моделюють Merge Conflict згідно з docs/GIT_WORKFLOW.md!
  */
 export function calculateOrderTotal(params = {}) {
   const { seats = [], hall = null, showtime = null, promoCode = null, isStudent = false } = params;
@@ -76,14 +79,8 @@ export function calculateOrderTotal(params = {}) {
 
   let discountRate = 0;
   let isPromoValid = false;
-  const upperCode = (promoCode || '').trim().toUpperCase();
 
-  if (upperCode && PROMO_CODES[upperCode]) {
-    discountRate = PROMO_CODES[upperCode].discountPercent / 100;
-    isPromoValid = true;
-  } else if (isStudent) {
-    discountRate = 0.15; // 15% student discount baseline
-  }
+  // TODO (Ярік): Додати перевірку валідності промокоду та нарахування знижки
 
   const discountAmount = Math.round(subtotal * discountRate);
   const total = Math.max(0, subtotal - discountAmount);
@@ -95,26 +92,19 @@ export function calculateOrderTotal(params = {}) {
     discountRate,
     total,
     isPromoValid,
-    promoLabel: isPromoValid ? PROMO_CODES[upperCode].label : null
+    promoLabel: null
   };
 }
 
 /**
- * Apply promo helper
+ * Хелпер перевірки промокоду
+ * TODO (Ярік): Перевірка існування коду в PROMO_CODES та розрахунок знижки
  */
 export function applyPromo(promoCode, subtotal = 0) {
   const upperCode = (promoCode || '').trim().toUpperCase();
-  if (PROMO_CODES[upperCode]) {
-    const discountRate = PROMO_CODES[upperCode].discountPercent / 100;
-    const discountAmount = Math.round(subtotal * discountRate);
-    return {
-      valid: true,
-      code: upperCode,
-      label: PROMO_CODES[upperCode].label,
-      discountAmount,
-      total: Math.max(0, subtotal - discountAmount)
-    };
-  }
+
+  // TODO (Ярік): Реалізувати валідацію промокоду
+
   return {
     valid: false,
     code: promoCode,

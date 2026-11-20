@@ -1,13 +1,26 @@
 /**
  * CineSphere — Booking & Reservation Module
- * Handles seat matrix generation, double-booking prevention, and reservation transactions.
+ * 
+ * 👤 Відповідальний розробник: Ярік (@YaroslavYanushevych)
+ * 🌿 Робоча гілка в Git: feature/yarik-booking-logic
+ * 
+ * 📌 Завдання для Яріка:
+ * 1. generateBookingCode() — генерація унікального номера квитка у форматі CS-XXXXX (де X - цифри).
+ * 2. getSeatGrid(showtimeId) — генерація сітки місць залу з категоріями та статусами зайнятості.
+ * 3. createReservation(params) — валідація замовлення:
+ *    - перевірка ліміту (максимум 6 місць на замовлення);
+ *    - обов'язковість імені та контактного номеру телефону покупця;
+ *    - захист від подвійного бронювання (Double-Booking Prevention);
+ *    - збереження транзакції бронювання у LocalStorage через db.saveBooking.
+ * 4. cancelReservation(bookingId) — скасування квитка та повернення місць у вільний статус.
  */
 
 import { db } from './db.js';
 import { pricing } from './pricing.js';
 
 /**
- * Generate a unique booking code, e.g. "CS-89241"
+ * Генерація унікального цифрового коду бронювання (наприклад, "CS-89241")
+ * TODO (Ярік): Реалізувати генерацію випадкового 5-значного числа з префіксом CS-
  */
 function generateBookingCode() {
   const num = Math.floor(10000 + Math.random() * 90000);
@@ -15,7 +28,7 @@ function generateBookingCode() {
 }
 
 /**
- * Determine seat tier based on hall tier definitions
+ * Визначення категорії місця на основі конфігурації залу
  */
 function resolveSeatTier(rowNumber, hall) {
   if (!hall || !hall.seatTiers) return 'standard';
@@ -31,14 +44,13 @@ function resolveSeatTier(rowNumber, hall) {
 
 export const booking = {
   /**
-   * Generates the seat grid for a specific showtime.
-   * Supports both getSeatGrid(showtimeId) and getSeatGrid(movieId, showtimeStr)
+   * Отримання повної матриці сидінь залу для конкретного сеансу
+   * TODO (Ярік): Згенерувати ряди та місця з актуальними статусами зайнятості
    */
   getSeatGrid(showtimeIdOrMovieId, showtimeStr = null) {
     let showtime = null;
 
     if (showtimeStr) {
-      // Look up by movieId and time
       const all = db.getShowtimes();
       showtime = all.find(s => s.movieId === showtimeIdOrMovieId && (s.time === showtimeStr || s.id === showtimeStr));
     }
@@ -47,7 +59,6 @@ export const booking = {
       showtime = db.getShowtimeById(showtimeIdOrMovieId);
     }
 
-    // Fallback: if not found by ID directly, find first showtime or default
     if (!showtime) {
       const all = db.getShowtimes();
       showtime = all[0];
@@ -58,120 +69,60 @@ export const booking = {
     const hall = db.getHallById(showtime.hallId) || db.getHalls()[0];
     if (!hall) return [];
 
-    const occupiedSeatIds = db.getOccupiedSeatIds(showtime.id);
-    const grid = [];
-
-    const totalRows = hall.totalRows || 6;
+    const totalRows = hall.rows || hall.totalRows || 6;
     const seatsPerRow = hall.seatsPerRow || 8;
+    const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtime.id) : [];
 
+    const grid = [];
     for (let r = 1; r <= totalRows; r++) {
+      const rowSeats = [];
+      const tier = resolveSeatTier(r, hall);
+
       for (let s = 1; s <= seatsPerRow; s++) {
         const seatId = `R${r}-S${s}`;
-        const tier = resolveSeatTier(r, hall);
-        const seatPrice = pricing.calculateSeatPrice(tier, hall, showtime);
         const isOccupied = occupiedSeatIds.includes(seatId);
 
-        grid.push({
+        rowSeats.push({
           id: seatId,
           row: r,
           seat: s,
           tier,
-          basePrice: seatPrice,
-          price: seatPrice,
-          status: isOccupied ? 'occupied' : 'available'
+          status: isOccupied ? 'occupied' : 'available',
+          price: pricing.calculateSeatPrice ? pricing.calculateSeatPrice(tier, hall, showtime) : 150
         });
       }
+      grid.push(rowSeats);
     }
 
     return grid;
   },
 
   /**
-   * Creates a confirmed reservation in LocalStorage.
-   * Throws Error or returns failure if any seat is already booked (preventing double-booking).
+   * Створення нового бронювання
+   * TODO (Ярік): Реалізувати перевірку ліміту (до 6 місць), валідацію замовника,
+   * захист від double-booking та збереження через db.saveBooking.
    */
   createReservation(params = {}) {
     const { showtimeId, seats = [], customer = {}, promoCode = null } = params;
 
-    // Validation
-    if (!showtimeId) {
-      throw new Error('Не вказано ідентифікатор сеансу (showtimeId).');
-    }
+    // TODO (Ярік): Додати перевірку на порожній масив місць
+    // TODO (Ярік): Додати ліміт seats.length <= 6
+    // TODO (Ярік): Додати валідацію customer.fullName та customer.phone
+    // TODO (Ярік): Додати перевірку db.getOccupiedSeatIds на зайнятість місць
+    // TODO (Ярік): Сформувати об'єкт bookingRecord та зберегти через db.saveBooking(bookingRecord)
 
-    if (!Array.isArray(seats) || seats.length === 0) {
-      throw new Error('Не обрано жодного місця для бронювання.');
-    }
-
-    if (seats.length > 6) {
-      throw new Error('Неможливо забронювати більше 6 місць в одному замовленні.');
-    }
-
-    if (!customer.fullName || !customer.fullName.trim()) {
-      throw new Error("Обов'язково вкажіть ім'я та прізвище замовника.");
-    }
-
-    if (!customer.phone || !customer.phone.trim()) {
-      throw new Error("Обов'язково вкажіть контактний номер телефону.");
-    }
-
-    const showtime = db.getShowtimeById(showtimeId);
-    if (!showtime) {
-      throw new Error(`Сеанс "${showtimeId}" не знайдено.`);
-    }
-
-    const movie = db.getMovieById(showtime.movieId);
-    const hall = db.getHallById(showtime.hallId);
-
-    // Double-booking collision check
-    const occupiedSeatIds = db.getOccupiedSeatIds(showtimeId);
-    const conflictingSeats = seats.filter(s => occupiedSeatIds.includes(s.id || `R${s.row}-S${s.seat}`));
-
-    if (conflictingSeats.length > 0) {
-      const conflictList = conflictingSeats.map(s => s.id || `Ряд ${s.row}, Місце ${s.seat}`).join(', ');
-      throw new Error(`Місце ${conflictList} вже заброньовано. Будь ласка, оберіть інші місця.`);
-    }
-
-    // Calculate final order financials
-    const orderPricing = pricing.calculateOrderTotal({
-      seats,
-      hall,
-      showtime,
-      promoCode
-    });
-
+    const bookingCode = generateBookingCode();
     const bookingRecord = {
-      id: generateBookingCode(),
+      id: bookingCode,
+      bookingCode,
       showtimeId,
-      movieId: showtime.movieId,
-      movieTitle: movie ? movie.title : 'Фільм',
-      hallName: hall ? hall.name : 'Кінозал',
-      showtimeDate: showtime.date,
-      showtimeTime: showtime.time,
-      seats: seats.map(s => ({
-        id: s.id || `R${s.row}-S${s.seat}`,
-        row: s.row,
-        seat: s.seat,
-        tier: s.tier || 'standard',
-        price: s.price || pricing.calculateSeatPrice(s.tier || 'standard', hall, showtime)
-      })),
-      customer: {
-        fullName: customer.fullName.trim(),
-        email: (customer.email || '').trim(),
-        phone: customer.phone.trim()
-      },
-      pricing: {
-        subtotal: orderPricing.subtotal,
-        discountAmount: orderPricing.discountAmount,
-        promoCodeApplied: orderPricing.isPromoValid ? promoCode : null,
-        totalAmount: orderPricing.total
-      },
-      status: 'confirmed',
-      createdAt: new Date().toISOString()
+      seats,
+      customer,
+      pricing: { total: 0 }
     };
 
-    const saveResult = db.saveBooking(bookingRecord);
-    if (!saveResult.success) {
-      throw new Error(saveResult.error || 'Помилка при збереженні бронювання в базі даних.');
+    if (db.saveBooking) {
+      db.saveBooking(bookingRecord);
     }
 
     return {
@@ -180,9 +131,6 @@ export const booking = {
     };
   },
 
-  /**
-   * Alias for createReservation to satisfy createBooking API in some test cases
-   */
   createBooking(showtimeId, seats, customer, promoCode) {
     if (typeof showtimeId === 'object' && showtimeId !== null) {
       return this.createReservation(showtimeId);
@@ -191,15 +139,16 @@ export const booking = {
   },
 
   /**
-   * Cancel an existing reservation
+   * Скасування існуючого бронювання
+   * TODO (Ярік): Вивільнення місць у базі даних
    */
   cancelReservation(bookingId) {
-    return db.cancelBooking(bookingId);
+    if (db.cancelBooking) {
+      return db.cancelBooking(bookingId);
+    }
+    return { success: true };
   },
 
-  /**
-   * Alias for cancelReservation
-   */
   cancelBooking(bookingId) {
     return this.cancelReservation(bookingId);
   }
