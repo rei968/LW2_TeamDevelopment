@@ -74,16 +74,15 @@ export const booking = {
     const seatsPerRow = hall.seatsPerRow || 8;
     const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtime.id) : [];
 
-    const grid = [];
+    const seats = [];
     for (let r = 1; r <= totalRows; r++) {
-      const rowSeats = [];
       const tier = resolveSeatTier(r, hall);
 
       for (let s = 1; s <= seatsPerRow; s++) {
         const seatId = `R${r}-S${s}`;
         const isOccupied = occupiedSeatIds.includes(seatId);
 
-        rowSeats.push({
+        seats.push({
           id: seatId,
           row: r,
           seat: s,
@@ -92,10 +91,9 @@ export const booking = {
           price: pricing.calculateSeatPrice ? pricing.calculateSeatPrice(tier, hall, showtime) : 150
         });
       }
-      grid.push(rowSeats);
     }
 
-    return grid;
+    return seats;
   },
 
   /**
@@ -113,7 +111,7 @@ export const booking = {
     }
 
     if (seats.length > MAX_SEATS_PER_ORDER) {
-      throw new Error(`Дозволено бронювати максимум ${MAX_SEATS_PER_ORDER} місць в одному замовленні.`);
+      throw new Error(`Заборонено бронювати більше ${MAX_SEATS_PER_ORDER} місць в одному замовленні.`);
     }
 
     const customerName = (customer.fullName || customer.name || '').trim();
@@ -149,7 +147,7 @@ export const booking = {
 
     if (conflictingSeats.length > 0) {
       const conflictList = conflictingSeats.map(s => s.id || `Ряд ${s.row}, Місце ${s.seat || s.number}`).join(', ');
-      throw new Error(`Місце ${conflictList} вже зайняте. Будь ласка, оберіть інші місця.`);
+      throw new Error(`Місце ${conflictList} вже заброньовано іншим користувачем. Будь ласка, оберіть інші місця.`);
     }
 
     const showtime = db.getShowtimeById ? db.getShowtimeById(showtimeId) : null;
