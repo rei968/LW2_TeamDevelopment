@@ -1,16 +1,8 @@
 /**
  * CineSphere — Ticket Pricing Module
- * 
+ *
  * 👤 Відповідальний розробник: Ярік (@YaroslavYanushevych)
  * 🌿 Робоча гілка в Git: feature/yarik-booking-logic
- * 
- * 📌 Завдання для Яріка:
- * 1. calculateTicketPrice(basePrice, seatType, isStudent) — розрахунок вартості квитка з націнками
- *    (VIP +50 грн, Дивани +100 грн) та студентською знижкою 15%.
- * 2. calculateSeatPrice(tier, hall, showtime) — визначення вартості конкретного крісла.
- * 3. calculateOrderTotal(params) — розрахунок повної суми замовлення, знижок та промокодів.
- * 4. applyPromo(promoCode, subtotal) — перевірка та застосування промокодів (STUDENT10, CINE20).
- * 5. Змоделювати Merge Conflict у функції calculateOrderTotal згідно з docs/GIT_WORKFLOW.md!
  */
 
 // Зареєстровані промокоди кінотеатру
@@ -19,9 +11,15 @@ export const PROMO_CODES = {
   'CINE20': { discountPercent: 20, label: 'Промокод кіномана (-20%)' }
 };
 
+// Націнки за категорію сидіння (грн)
+const SEAT_SURCHARGES = {
+  standard: 0,
+  vip: 50,
+  couches: 100
+};
+
 /**
- * Розрахунок вартості одного квитка
- * TODO (Ярік): Реалізувати націнки за категорію сидіння та знижку для студентів
+ * Розрахунок вартості одного квитка з урахуванням категорії сидіння та студентської знижки
  */
 export function calculateTicketPrice(basePrice = 150, seatType = 'standard', isStudent = false) {
   // Підтримка виклику як об'єктом, так і позиційними аргументами
@@ -33,34 +31,37 @@ export function calculateTicketPrice(basePrice = 150, seatType = 'standard', isS
   }
 
   let price = Number(basePrice) || 150;
+  const normalizedType = String(seatType || 'standard').toLowerCase();
 
-  // TODO (Ярік): Додати націнки для VIP (+50) та Couches (+100)
-  // TODO (Ярік): Додати застосування студентської знижки (15%)
+  if (normalizedType === 'vip') {
+    price += SEAT_SURCHARGES.vip;
+  } else if (normalizedType === 'couches' || normalizedType === 'couch') {
+    price += SEAT_SURCHARGES.couches;
+  }
+
+  if (isStudent) {
+    price *= 0.85; // Студентська знижка 15%
+  }
 
   return Math.round(price);
 }
 
 /**
  * Розрахунок ціни окремого місця з урахуванням конфігурації залу та сеансу
- * TODO (Ярік): Отримати базову ціну категорії з hall.seatTiers
  */
 export function calculateSeatPrice(tier = 'standard', hall = null, showtime = null) {
-  let basePrice = 150;
+  const modifier = (showtime && showtime.basePriceModifier) ? showtime.basePriceModifier : 1.0;
 
   if (hall && hall.seatTiers && hall.seatTiers[tier]) {
-    basePrice = hall.seatTiers[tier].basePrice;
+    return Math.round(hall.seatTiers[tier].basePrice * modifier);
   }
 
-  const modifier = (showtime && showtime.basePriceModifier) ? showtime.basePriceModifier : 1.0;
-  const adjustedBase = Math.round(basePrice * modifier);
-
+  const adjustedBase = Math.round(150 * modifier);
   return calculateTicketPrice(adjustedBase, tier, false);
 }
 
 /**
- * Підрахунок загальної суми замовлення
- * TODO (Ярік): Реалізувати підсумовування цін обраних місць, застосування знижок та промокодів
- * ⚠️ УВАГА: У цій функції Ярік та Же моделюють Merge Conflict згідно з docs/GIT_WORKFLOW.md!
+ * Підрахунок загальної суми замовлення зі знижками та промокодами
  */
 export function calculateOrderTotal(params = {}) {
   const { seats = [], hall = null, showtime = null, promoCode = null, isStudent = false } = params;
@@ -79,8 +80,22 @@ export function calculateOrderTotal(params = {}) {
 
   let discountRate = 0;
   let isPromoValid = false;
+  let promoLabel = null;
 
-  // TODO (Ярік): Додати перевірку валідності промокоду та нарахування знижки
+  // Перевірка промокоду
+  const upperCode = (promoCode || '').trim().toUpperCase();
+  if (upperCode && PROMO_CODES[upperCode]) {
+    const promo = PROMO_CODES[upperCode];
+    discountRate = promo.discountPercent / 100;
+    isPromoValid = true;
+    promoLabel = promo.label;
+  } else if (isStudent) {
+    discountRate = 0.15;
+    promoLabel = 'Студентська знижка (-15%)';
+  } else if (seats.length >= 3) {
+    discountRate = 0.10; // Сімейна / групова знижка 10% для замовлень від 3 квитків
+    promoLabel = 'Сімейна знижка від 3 квитків (-10%)';
+  }
 
   const discountAmount = Math.round(subtotal * discountRate);
   const total = Math.max(0, subtotal - discountAmount);
@@ -92,24 +107,38 @@ export function calculateOrderTotal(params = {}) {
     discountRate,
     total,
     isPromoValid,
-    promoLabel: null
+    promoLabel
   };
 }
 
 /**
- * Хелпер перевірки промокоду
- * TODO (Ярік): Перевірка існування коду в PROMO_CODES та розрахунок знижки
+ * Хелпер перевірки та застосування промокоду
  */
 export function applyPromo(promoCode, subtotal = 0) {
   const upperCode = (promoCode || '').trim().toUpperCase();
+  const promo = PROMO_CODES[upperCode];
 
-  // TODO (Ярік): Реалізувати валідацію промокоду
+  if (!promo) {
+    return {
+      valid: false,
+      code: promoCode,
+      label: null,
+      discountPercent: 0,
+      discountAmount: 0,
+      total: subtotal
+    };
+  }
+
+  const discountAmount = Math.round(subtotal * (promo.discountPercent / 100));
+  const total = Math.max(0, subtotal - discountAmount);
 
   return {
-    valid: false,
-    code: promoCode,
-    discountAmount: 0,
-    total: subtotal
+    valid: true,
+    code: upperCode,
+    label: promo.label,
+    discountPercent: promo.discountPercent,
+    discountAmount,
+    total
   };
 }
 

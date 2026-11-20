@@ -1,30 +1,26 @@
 /**
  * CineSphere — Booking & Reservation Module
- * 
+ *
  * 👤 Відповідальний розробник: Ярік (@YaroslavYanushevych)
  * 🌿 Робоча гілка в Git: feature/yarik-booking-logic
- * 
- * 📌 Завдання для Яріка:
- * 1. generateBookingCode() — генерація унікального номера квитка у форматі CS-XXXXX (де X - цифри).
- * 2. getSeatGrid(showtimeId) — генерація сітки місць залу з категоріями та статусами зайнятості.
- * 3. createReservation(params) — валідація замовлення:
- *    - перевірка ліміту (максимум 6 місць на замовлення);
- *    - обов'язковість імені та контактного номеру телефону покупця;
- *    - захист від подвійного бронювання (Double-Booking Prevention);
- *    - збереження транзакції бронювання у LocalStorage через db.saveBooking.
- * 4. cancelReservation(bookingId) — скасування квитка та повернення місць у вільний статус.
  */
 
 import { db } from './db.js';
 import { pricing } from './pricing.js';
 
+const MAX_SEATS_PER_ORDER = 6;
+
 /**
- * Генерація унікального цифрового коду бронювання (наприклад, "CS-89241")
- * TODO (Ярік): Реалізувати генерацію випадкового 5-значного числа з префіксом CS-
+ * Генерація унікального цифрового коду бронювання у форматі CS-XXXXX
  */
 function generateBookingCode() {
-  const num = Math.floor(10000 + Math.random() * 90000);
-  return `CS-${num}`;
+  const existingIds = new Set((db.getBookings ? db.getBookings() : []).map(b => b.id));
+  let code;
+  do {
+    const num = Math.floor(10000 + Math.random() * 90000);
+    code = `CS-${num}`;
+  } while (existingIds.has(code));
+  return code;
 }
 
 /**
@@ -44,8 +40,7 @@ function resolveSeatTier(rowNumber, hall) {
 
 export const booking = {
   /**
-   * Отримання повної матриці сидінь залу для конкретного сеансу
-   * TODO (Ярік): Згенерувати ряди та місця з актуальними статусами зайнятості
+   * Отримання списку всіх місць залу для конкретного сеансу з актуальними статусами зайнятості
    */
   getSeatGrid(showtimeIdOrMovieId, showtimeStr = null) {
     let showtime = null;
@@ -73,16 +68,15 @@ export const booking = {
     const seatsPerRow = hall.seatsPerRow || 8;
     const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtime.id) : [];
 
-    const grid = [];
+    const seats = [];
     for (let r = 1; r <= totalRows; r++) {
-      const rowSeats = [];
       const tier = resolveSeatTier(r, hall);
 
       for (let s = 1; s <= seatsPerRow; s++) {
         const seatId = `R${r}-S${s}`;
         const isOccupied = occupiedSeatIds.includes(seatId);
 
-        rowSeats.push({
+        seats.push({
           id: seatId,
           row: r,
           seat: s,
@@ -91,38 +85,88 @@ export const booking = {
           price: pricing.calculateSeatPrice ? pricing.calculateSeatPrice(tier, hall, showtime) : 150
         });
       }
-      grid.push(rowSeats);
     }
 
-    return grid;
+    return seats;
   },
 
   /**
-   * Створення нового бронювання
-   * TODO (Ярік): Реалізувати перевірку ліміту (до 6 місць), валідацію замовника,
-   * захист від double-booking та збереження через db.saveBooking.
+   * Створення нового бронювання з валідацією ліміту, даних покупця та захистом від подвійного бронювання
    */
   createReservation(params = {}) {
-    const { showtimeId, seats = [], customer = {}, promoCode = null } = params;
+    const { showtimeId, seats = [], customer = {}, promoCode = null, isStudent = false } = params;
 
-    // TODO (Ярік): Додати перевірку на порожній масив місць
-    // TODO (Ярік): Додати ліміт seats.length <= 6
-    // TODO (Ярік): Додати валідацію customer.fullName та customer.phone
-    // TODO (Ярік): Додати перевірку db.getOccupiedSeatIds на зайнятість місць
-    // TODO (Ярік): Сформувати об'єкт bookingRecord та зберегти через db.saveBooking(bookingRecord)
+    if (!showtimeId) {
+      throw new Error('Не вказано сеанс для бронювання.');
+    }
+
+    if (!Array.isArray(seats) || seats.length === 0) {
+      throw new Error('Оберіть хоча б одне місце для бронювання.');
+    }
+
+    if (seats.length > MAX_SEATS_PER_ORDER) {
+      throw new Error(`Максимальна кількість місць на одне замовлення — ${MAX_SEATS_PER_ORDER}.`);
+    }
+
+    const fullName = (customer.fullName || '').trim();
+    const phone = (customer.phone || '').trim();
+    const email = (customer.email || '').trim();
+
+    if (!fullName) {
+      throw new Error("Будь ласка, введіть ім'я та прізвище покупця.");
+    }
+
+    if (!phone) {
+      throw new Error('Будь ласка, введіть контактний номер телефону.');
+    }
+
+    // Захист від подвійного бронювання (Double-Booking Prevention)
+    const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtimeId) : [];
+    const conflictingSeat = seats.find(s => occupiedSeatIds.includes(s.id));
+    if (conflictingSeat) {
+      throw new Error(`Місце ${conflictingSeat.id} вже заброньовано іншим користувачем.`);
+    }
+
+    const showtime = db.getShowtimeById ? db.getShowtimeById(showtimeId) : null;
+    const movie = showtime && db.getMovieById ? db.getMovieById(showtime.movieId) : null;
+    const hall = showtime && db.getHallById ? db.getHallById(showtime.hallId) : null;
+
+    const orderPricing = pricing.calculateOrderTotal({
+      seats,
+      hall,
+      showtime,
+      promoCode,
+      isStudent
+    });
 
     const bookingCode = generateBookingCode();
     const bookingRecord = {
       id: bookingCode,
       bookingCode,
       showtimeId,
-      seats,
-      customer,
-      pricing: { total: 0 }
+      movieId: movie ? movie.id : null,
+      movieTitle: movie ? movie.title : '',
+      hallName: hall ? hall.name : '',
+      showtimeDate: showtime ? showtime.date : '',
+      showtimeTime: showtime ? showtime.time : '',
+      seats: seats.map(s => ({ ...s })),
+      customer: { fullName, email, phone },
+      pricing: {
+        subtotal: orderPricing.subtotal,
+        discountAmount: orderPricing.discountAmount,
+        promoCodeApplied: orderPricing.isPromoValid ? (promoCode || '').trim().toUpperCase() : null,
+        totalAmount: orderPricing.total,
+        total: orderPricing.total
+      },
+      status: 'confirmed',
+      createdAt: new Date().toISOString()
     };
 
     if (db.saveBooking) {
-      db.saveBooking(bookingRecord);
+      const saveResult = db.saveBooking(bookingRecord);
+      if (saveResult && !saveResult.success) {
+        throw new Error(saveResult.error || 'Не вдалося зберегти бронювання.');
+      }
     }
 
     return {
@@ -139,10 +183,12 @@ export const booking = {
   },
 
   /**
-   * Скасування існуючого бронювання
-   * TODO (Ярік): Вивільнення місць у базі даних
+   * Скасування існуючого бронювання та повернення місць у статус available
    */
   cancelReservation(bookingId) {
+    if (!bookingId) {
+      return { success: false, error: 'Не вказано код бронювання.' };
+    }
     if (db.cancelBooking) {
       return db.cancelBooking(bookingId);
     }
