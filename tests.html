@@ -502,7 +502,7 @@
         runner.it('calculateOrderTotal підсумовує ціни кількох обраних місць', () => {
           const seats = [
             { id: 'R1-S1', tier: 'standard', price: 150 },
-            { id: 'R1-S2', tier: 'standard', price: 200 }
+            { id: 'R1-S2', tier: 'vip', price: 200 }
           ];
           const summary = calculateOrderTotal({ seats });
           expect(summary.subtotal).toBe(350);
@@ -714,7 +714,6 @@
           expect(summary.discountAmount).toBe(20);
           expect(summary.total).toBe(180);
         });
-
         runner.it('Групова знижка 15% застосовується автоматично для замовлень від 3 квитків (правило Же)', () => {
           const seats = [
             { id: 'R1-S1', tier: 'standard', price: 100 },
