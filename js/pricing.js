@@ -92,6 +92,10 @@ export function calculateOrderTotal(params = {}) {
   } else if (isStudent) {
     discountRate = 0.15;
     promoLabel = 'Студентська знижка (-15%)';
+  // Об'єднана логіка після вирішення Merge Conflict:
+  } else if (seats.length >= 3) {
+    discountRate = 0.15; // Групова знижка 15% для компаній від 3 осіб
+    promoLabel = 'Групова знижка від 3 квитків (-15%)';
   } else if (seats.some(s => s.tier === 'vip')) {
     discountRate = 0.10; // VIP-знижка 10% для поціновувачів комфорту
     promoLabel = 'VIP-знижка (-10%)';
