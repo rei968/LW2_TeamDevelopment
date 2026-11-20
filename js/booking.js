@@ -120,6 +120,17 @@ export const booking = {
       throw new Error('Будь ласка, введіть контактний номер телефону.');
     }
 
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 9) {
+      throw new Error('Некоректний формат номера телефону (мінімум 9 цифр).');
+    }
+
+    // Перевірка на дублікати місць у межах одного замовлення
+    const uniqueSeatIds = new Set(seats.map(s => s.id));
+    if (uniqueSeatIds.size !== seats.length) {
+      throw new Error('Одне й те саме місце не можна обрати двічі в одному замовленні.');
+    }
+
     // Захист від подвійного бронювання (Double-Booking Prevention)
     const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtimeId) : [];
     const conflictingSeat = seats.find(s => occupiedSeatIds.includes(s.id));
@@ -197,6 +208,20 @@ export const booking = {
 
   cancelBooking(bookingId) {
     return this.cancelReservation(bookingId);
+  },
+
+  /**
+   * Повертає зведену інформацію про доступність місць на конкретний сеанс
+   */
+  getShowtimeAvailability(showtimeId) {
+    const seats = this.getSeatGrid(showtimeId);
+    const totalSeats = seats.length;
+    const occupiedSeats = seats.filter(s => s.status === 'occupied').length;
+    return {
+      totalSeats,
+      occupiedSeats,
+      availableSeats: totalSeats - occupiedSeats
+    };
   }
 };
 
