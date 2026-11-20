@@ -58,6 +58,14 @@ class CineSphereStateStore {
    * Returns: { success: boolean, message?: string }
    */
   toggleSeat(seat) {
+    if (!seat || !seat.id) {
+      return { success: false, error: 'Некоректні дані обраного місця.' };
+    }
+
+    if (seat.status === 'occupied') {
+      return { success: false, error: 'Неможливо обрати вже зайняте місце.' };
+    }
+
     const seats = [...this._state.selectedSeats];
     const index = seats.findIndex(s => s.id === seat.id);
 
@@ -80,6 +88,13 @@ class CineSphereStateStore {
       this.emit('seatSelected', seat);
       return { success: true, action: 'added' };
     }
+  }
+
+  /**
+   * Calculate subtotal of currently selected seats
+   */
+  getSelectedTotal() {
+    return this._state.selectedSeats.reduce((sum, s) => sum + (Number(s.price) || 0), 0);
   }
 
   /**

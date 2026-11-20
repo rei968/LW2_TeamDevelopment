@@ -393,11 +393,45 @@ export const db = {
   },
 
   /**
+   * Returns confirmed bookings for a given showtime
+   */
+  getBookingsByShowtime(showtimeId) {
+    return this.getBookings().filter(
+      b => b.showtimeId === showtimeId && b.status === 'confirmed'
+    );
+  },
+
+  /**
+   * Returns aggregated booking statistics (count, seats sold, total revenue)
+   */
+  getBookingStats() {
+    const confirmed = this.getBookings().filter(b => b.status === 'confirmed');
+    const totalSeatsSold = confirmed.reduce(
+      (sum, b) => sum + (Array.isArray(b.seats) ? b.seats.length : 0),
+      0
+    );
+    const totalRevenue = confirmed.reduce(
+      (sum, b) => sum + ((b.pricing && (b.pricing.totalAmount ?? b.pricing.total)) || 0),
+      0
+    );
+    return {
+      totalBookings: confirmed.length,
+      totalSeatsSold,
+      totalRevenue
+    };
+  },
+
+  /**
    * Saves a new booking with double-booking collision check
    */
   saveBooking(booking) {
     if (!booking || !booking.showtimeId || !Array.isArray(booking.seats) || booking.seats.length === 0) {
       return { success: false, error: 'Некоректні дані бронювання або не обрано жодного місця.' };
+    }
+
+    const seatIds = booking.seats.map(s => s.id);
+    if (new Set(seatIds).size !== seatIds.length) {
+      return { success: false, error: 'Виявлено дублікати місць у межах одного бронювання.' };
     }
 
     const occupied = this.getOccupiedSeatIds(booking.showtimeId);
