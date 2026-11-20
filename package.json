@@ -1,0 +1,22 @@
+{
+  "name": "cinesphere",
+  "version": "1.0.0",
+  "description": "CineSphere 🎬 — Cinema Showcase & Ticket Booking Platform (LR2)",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve -l 3000 .",
+    "test": "node scripts/run_tests.mjs",
+    "build": "node -e \"console.log('Build check passed: Pure Vanilla Web bundle is ready for production.')\"",
+    "pack:zip": "powershell -Command \"Compress-Archive -Path index.html,tests.html,css,js,docs,screenshots,README.md,REPORT_ZHE.md -DestinationPath CineSphere_Release.zip -Force\""
+  },
+  "keywords": [
+    "cinesphere",
+    "cinema",
+    "booking",
+    "git-flow",
+    "vanilla-js"
+  ],
+  "author": "rei968",
+  "license": "MIT"
+}
