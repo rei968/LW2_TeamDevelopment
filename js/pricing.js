@@ -93,8 +93,8 @@ export function calculateOrderTotal(params = {}) {
     discountRate = 0.15;
     promoLabel = 'Студентська знижка (-15%)';
   } else if (seats.length >= 3) {
-    discountRate = 0.10; // Сімейна / групова знижка 10% для замовлень від 3 квитків
-    promoLabel = 'Сімейна знижка від 3 квитків (-10%)';
+    discountRate = 0.15; // Групова знижка 15% для компаній від 3 осіб
+    promoLabel = 'Групова знижка від 3 квитків (-15%)';
   }
 
   const discountAmount = Math.round(subtotal * discountRate);
