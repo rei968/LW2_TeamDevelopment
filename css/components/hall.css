@@ -1,0 +1,422 @@
+/**
+ * CineSphere — Cinema Hall & Seating Grid Styles
+ */
+
+/* Hall Section Container */
+.hall-container {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hall Header / Navigation Bar */
+.hall-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--spacing-6);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--spacing-8);
+  flex-wrap: wrap;
+  gap: var(--spacing-4);
+}
+
+.hall-movie-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hall-movie-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.hall-session-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-cyan);
+}
+
+.hall-session-meta span {
+  color: var(--color-text-muted);
+}
+
+/* Screen Visualization — Curved Neon IMAX Screen by Lyosha */
+.screen-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--spacing-10);
+  perspective: 700px;
+  position: relative;
+}
+
+.screen-curve {
+  width: 80%;
+  max-width: 680px;
+  height: 34px;
+  border-top: 5px solid var(--color-cyan);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.3) 0%, rgba(56, 189, 248, 0.05) 55%, transparent 100%);
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4), 0 -8px 24px rgba(56, 189, 248, 0.3);
+  transform: rotateX(25deg);
+  position: relative;
+  overflow: hidden;
+}
+
+.screen-curve::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: #ffffff;
+  box-shadow: 0 0 10px #38bdf8, 0 0 20px #38bdf8;
+  border-radius: 50%;
+}
+
+.screen-label {
+  margin-top: var(--spacing-4);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.screen-label::before,
+.screen-label::after {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background-color: var(--color-cyan);
+  opacity: 0.6;
+}
+
+/* Hall Seating Grid */
+.seating-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-8);
+  overflow-x: auto;
+  padding: var(--spacing-4) 0;
+}
+
+.seat-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.row-label {
+  width: 24px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-align: center;
+  user-select: none;
+}
+
+.seats-container {
+  display: flex;
+  gap: 8px;
+}
+
+/* Individual Seat — Styled with micro-interactions by Lyosha */
+.seat-btn {
+  width: 36px;
+  height: 34px;
+  background-color: var(--seat-standard);
+  border: 1px solid var(--seat-standard-border);
+  border-radius: 7px 7px 4px 4px;
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
+  position: relative;
+  user-select: none;
+}
+
+/* Hover micro-animation */
+.seat-btn:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.15);
+  z-index: 5;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Active micro-animation (click feedback) */
+.seat-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+/* Seat Tiers (Standard Blue, VIP Purple, Couches Gold) */
+.seat-btn.tier-standard {
+  background-color: var(--seat-standard);
+  border-color: var(--seat-standard-border);
+  box-shadow: var(--seat-standard-glow);
+}
+
+.seat-btn.tier-standard:hover:not(:disabled) {
+  border-color: #60a5fa;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+}
+
+.seat-btn.tier-vip {
+  background-color: var(--seat-vip);
+  border-color: var(--seat-vip-border);
+  color: #f3e8ff;
+  box-shadow: var(--seat-vip-glow);
+}
+
+.seat-btn.tier-vip:hover:not(:disabled) {
+  border-color: #e9d5ff;
+  box-shadow: 0 0 16px rgba(192, 132, 252, 0.7);
+}
+
+.seat-btn.tier-couches {
+  width: 64px; /* Wider love seat sofa */
+  background-color: var(--seat-couch);
+  border-color: var(--seat-couch-border);
+  color: #fef3c7;
+  box-shadow: var(--seat-couch-glow);
+  border-radius: 9px 9px 5px 5px;
+}
+
+.seat-btn.tier-couches:hover:not(:disabled) {
+  border-color: #fde68a;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.7);
+}
+
+/* Selected State with Pulsing Glow Animation */
+@keyframes pulseSelectedSeat {
+  0% {
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.75);
+  }
+  50% {
+    box-shadow: 0 0 22px rgba(56, 189, 248, 1), 0 0 6px #ffffff;
+  }
+  100% {
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.75);
+  }
+}
+
+.seat-btn.selected {
+  background-color: var(--seat-selected) !important;
+  border-color: #ffffff !important;
+  color: var(--color-text-inverse) !important;
+  animation: pulseSelectedSeat 2s infinite ease-in-out;
+  transform: translateY(-2px) scale(1.12);
+  z-index: 6;
+}
+
+/* Occupied State */
+.seat-btn.occupied,
+.seat-btn:disabled {
+  background-color: var(--seat-occupied) !important;
+  border-color: var(--seat-occupied-border) !important;
+  color: #475569 !important;
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.seat-btn.occupied::after {
+  content: '✕';
+  font-size: 10px;
+  color: #475569;
+}
+
+/* Hall Legend */
+.hall-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  flex-wrap: wrap;
+  padding: var(--spacing-4);
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-6);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.legend-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+}
+
+.legend-marker.standard { background-color: var(--seat-standard); border: 1px solid var(--seat-standard-border); box-shadow: var(--seat-standard-glow); }
+.legend-marker.vip { background-color: var(--seat-vip); border: 1px solid var(--seat-vip-border); box-shadow: var(--seat-vip-glow); }
+.legend-marker.couches { background-color: var(--seat-couch); border: 1px solid var(--seat-couch-border); box-shadow: var(--seat-couch-glow); width: 28px; }
+.legend-marker.selected { background-color: var(--seat-selected); box-shadow: var(--seat-selected-glow); }
+.legend-marker.occupied { background-color: var(--seat-occupied); border: 1px solid var(--seat-occupied-border); opacity: 0.55; }
+
+/* Hall Summary & Checkout Panel */
+.hall-summary-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-4);
+  padding: var(--spacing-5);
+  background-color: var(--color-bg-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+}
+
+.selection-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.selection-chips-list {
+  display: flex;
+  gap: var(--spacing-2);
+  flex-wrap: wrap;
+}
+
+.selected-seat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background-color: rgba(56, 189, 248, 0.15);
+  border: 1px solid var(--color-cyan);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-cyan);
+}
+
+.remove-seat-btn {
+  background: none;
+  border: none;
+  color: var(--color-cyan);
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.remove-seat-btn:hover {
+  color: var(--color-danger);
+}
+
+.price-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.total-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.total-amount {
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.total-amount span {
+  color: var(--color-cyan);
+}
+
+/* Responsive Hall Adjustments (Lyosha UI Mobile Adaptability) */
+@media (max-width: 640px) {
+  .hall-container {
+    padding: var(--spacing-4);
+  }
+
+  .hall-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+  }
+
+  .screen-curve {
+    width: 95%;
+    height: 28px;
+  }
+
+  .seat-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 10px;
+  }
+
+  .seat-btn.tier-couches {
+    width: 52px;
+  }
+
+  .row-label {
+    width: 18px;
+    font-size: 10px;
+  }
+
+  .hall-summary-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .price-summary {
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .seat-btn {
+    width: 26px;
+    height: 28px;
+    font-size: 9px;
+    border-radius: 4px;
+  }
+
+  .seat-btn.tier-couches {
+    width: 44px;
+  }
+
+  .seats-container {
+    gap: 4px;
+  }
+
+  .hall-legend {
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+  }
+
+  .legend-item {
+    font-size: 11px;
+  }
+}

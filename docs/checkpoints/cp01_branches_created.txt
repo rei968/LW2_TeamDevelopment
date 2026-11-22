@@ -1,0 +1,13 @@
+=== CHECKPOINT 01: FEATURE BRANCHES CREATED ===
+Timestamp: 2026-11-20T13:42:00Z
+Command: git branch -a
+
+* develop
+  feature/core-db
+  feature/yarik-vip-discount
+  feature/zhe-bulk-discount
+  feature/zhe-catalog-ui
+  main
+  remotes/origin/develop
+  remotes/origin/feature/zhe-catalog-ui
+  remotes/origin/main

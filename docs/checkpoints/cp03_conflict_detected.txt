@@ -1,0 +1,23 @@
+=== CHECKPOINT 03: MERGE CONFLICT DETECTED ===
+Timestamp: 2026-11-20T13:44:24Z
+Branch: feature/zhe-bulk-discount
+Target: develop
+Command: git merge develop
+
+Output:
+Auto-merging js/pricing.js
+CONFLICT (content): Merge conflict in js/pricing.js
+Automatic merge failed; fix conflicts and then commit the result.
+
+$ git status
+On branch feature/zhe-bulk-discount
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+	modified:   js/booking.js
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   js/pricing.js

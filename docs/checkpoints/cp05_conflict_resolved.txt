@@ -1,0 +1,13 @@
+=== CHECKPOINT 05: MERGE CONFLICT RESOLUTION COMMITTED ===
+Timestamp: 2026-11-20T13:46:55Z
+Branch: feature/zhe-bulk-discount
+Command: git commit -m "fix(merge): успішно вирішено конфлікт правил знижок у pricing.js"
+
+[feature/zhe-bulk-discount d860cc9] fix(merge): успішно вирішено конфлікт правил знижок у pricing.js
+
+Resolution Strategy:
+Combined both business discount rules into a prioritized discount evaluation:
+1. Valid Promo Code (10% or 20%)
+2. Student Discount (15%)
+3. Bulk / Company Discount (15% for >= 3 seats) [Zhe]
+4. VIP Seat Surcharge Discount (10% for VIP seats) [Yarik]

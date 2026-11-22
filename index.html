@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CineSphere — сучасна кіноафіша та інтерактивне бронювання квитків у кінотеатр">
+  <title>CineSphere 🎬 — Афіша та бронювання квитків</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Core Design System & Components -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components/header.css">
+  <link rel="stylesheet" href="css/components/catalog.css">
+  <link rel="stylesheet" href="css/components/hall.css">
+  <link rel="stylesheet" href="css/components/modal.css">
+  <link rel="stylesheet" href="css/components/toast.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="container header-inner">
+      <a href="#" class="brand" title="CineSphere Home">
+        <div class="brand-icon">🎬</div>
+        <div class="brand-title">Cine<span>Sphere</span></div>
+      </a>
+
+      <nav class="header-nav" aria-label="Головне меню">
+        <a href="#" class="nav-link btn-nav-catalog active">Афіша</a>
+        <a href="#halls" id="btn-nav-halls" class="nav-link">Зали</a>
+        <a href="tests.html" class="nav-link" title="QA Automated Tests">🧪 Тести</a>
+      </nav>
+
+      <div class="header-actions">
+        <button id="btn-reset-db" class="btn btn-outline btn-sm" title="Скинути стан бази даних LocalStorage">
+          <span>🔄 Скинути БД</span>
+        </button>
+        <button id="btn-open-bookings" class="btn btn-primary btn-sm btn-my-bookings">
+          <span>🎟 Мої квитки</span>
+          <span id="bookings-count-badge" class="badge-count" style="display: none;">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+    
+    <!-- SECTION 1: Catalog & Search Showcase View -->
+    <section id="catalog-section">
+      <!-- Search & Filters -->
+      <div class="catalog-controls">
+        <div class="controls-row">
+          <div class="search-box">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input 
+              type="text" 
+              id="search-movies" 
+              class="form-control search-input" 
+              placeholder="Пошук фільмів за назвою або режисером..."
+              aria-label="Пошук фільмів"
+              autocomplete="off"
+            >
+            <button 
+              type="button" 
+              id="btn-clear-search" 
+              class="btn-clear-search hidden" 
+              aria-label="Очистити пошук" 
+              title="Очистити пошук"
+            >&times;</button>
+          </div>
+
+          <div class="filter-chips" role="radiogroup" aria-label="Фільтрація за жанром">
+            <button type="button" class="filter-chip active" data-genre="all">Всі жанри</button>
+            <button type="button" class="filter-chip" data-genre="Sci-Fi">Sci-Fi</button>
+            <button type="button" class="filter-chip" data-genre="Action">Action</button>
+            <button type="button" class="filter-chip" data-genre="Drama">Drama</button>
+            <button type="button" class="filter-chip" data-genre="Animation">Animation</button>
+            <button type="button" class="filter-chip" data-genre="Biography">Biography</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Title -->
+      <div class="section-header">
+        <h2 class="section-title">Зараз у прокаті</h2>
+      </div>
+
+      <!-- Movies Grid (Dynamic) -->
+      <div id="movie-grid" class="movie-grid" aria-live="polite">
+        <!-- Rendered by catalogView.js -->
+      </div>
+    </section>
+
+    <!-- SECTION 2: Interactive Hall & Seat Selection View -->
+    <section id="hall-view" class="hall-container hidden">
+      <!-- Hall Navigation Header -->
+      <div class="hall-header">
+        <div class="hall-movie-details">
+          <button id="btn-back-to-catalog" class="btn btn-outline btn-sm" style="margin-bottom: 0.5rem; align-self: flex-start;">
+            ← Назад до афіші
+          </button>
+          <h2 id="hall-movie-title" class="hall-movie-title">Назва фільму</h2>
+          <div id="hall-session-meta" class="hall-session-meta">
+            <!-- Rendered by hallView.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Curved Screen Visualization -->
+      <div class="screen-area" aria-hidden="true">
+        <div class="screen-curve"></div>
+        <span class="screen-label">ЕКРАН КІНОЗАЛУ</span>
+      </div>
+
+      <!-- Seating Grid -->
+      <div id="seat-grid" class="seating-area" role="grid" aria-label="Схема вибору місць у кінозалі">
+        <!-- Rendered by hallView.js -->
+      </div>
+
+      <!-- Seating Legend -->
+      <div class="hall-legend">
+        <div class="legend-item">
+          <span class="legend-marker standard"></span>
+          <span>Стандарт (130-160 грн)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-marker vip"></span>
+          <span>VIP (200-260 грн)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-marker couches"></span>
+          <span>Дивани (380 грн)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-marker selected"></span>
+          <span>Ваш вибір</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-marker occupied"></span>
+          <span>Зайнято</span>
+        </div>
+      </div>
+
+      <!-- Summary & Checkout Bar -->
+      <div class="hall-summary-panel">
+        <div class="selection-info">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 13px; font-weight: 700; color: var(--color-text-primary);">Обрані місця:</span>
+            <span id="selected-count-badge" class="badge badge-cyan">0/6</span>
+          </div>
+          <div id="selected-seats-list" class="selection-chips-list">
+            <span style="font-size: 13px; color: var(--color-text-muted);">Місця ще не обрані</span>
+          </div>
+        </div>
+
+        <div class="price-summary">
+          <div>
+            <div class="total-label">Сума замовлення:</div>
+            <div id="total-amount-display" class="total-amount"><span>0</span> грн</div>
+          </div>
+          <button id="btn-checkout" class="btn btn-primary btn-lg" disabled>
+            Оформити квитки ➔
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: Checkout Form Modal -->
+  <div id="checkout-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="checkout-modal-title" class="modal-title">Оформлення замовлення</h3>
+        <button class="modal-close-btn" aria-label="Закрити модальне вікно">&times;</button>
+      </div>
+      <form id="checkout-form">
+        <div class="modal-body">
+          <!-- Session summary -->
+          <div class="order-summary-box">
+            <div style="font-weight: 700; color: var(--color-cyan);" id="checkout-movie-title">Фільм</div>
+            <div style="font-size: 12px; color: var(--color-text-secondary);" id="checkout-hall-meta">Зал і час</div>
+            <div id="checkout-seats-summary" style="margin-top: 4px; font-size: 13px; color: var(--color-text-primary);"></div>
+            <div class="summary-row" style="margin-top: 8px;">
+              <span>Вартість квитків:</span>
+              <span id="checkout-subtotal">0 грн</span>
+            </div>
+            <div class="summary-row">
+              <span>Знижка:</span>
+              <span id="checkout-discount" style="color: var(--color-emerald);">0 грн</span>
+            </div>
+            <div class="summary-row total-row">
+              <span>Разом до сплати:</span>
+              <span id="checkout-total" style="color: var(--color-cyan); font-size: 18px;">0 грн</span>
+            </div>
+          </div>
+
+          <!-- Customer details inputs -->
+          <div class="form-group">
+            <label class="form-label" for="customer-name">Ім'я та Прізвище *</label>
+            <input type="text" id="customer-name" class="form-control" placeholder="Олексій Стратонов" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="customer-email">Email адреса</label>
+            <input type="email" id="customer-email" class="form-control" placeholder="oleksiy@example.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="customer-phone">Номер телефону *</label>
+            <input type="tel" id="customer-phone" class="form-control" placeholder="+38 (050) 123-45-67" required>
+          </div>
+
+          <!-- Promo Code -->
+          <div class="form-group">
+            <label class="form-label" for="promo-code-input">Промокод на знижку (опціонально)</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="promo-code-input" class="form-control" placeholder="Наприклад: STUDENT10 або CINE20">
+              <button type="button" id="btn-apply-promo" class="btn btn-secondary">Застосувати</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline btn-modal-cancel">Скасувати</button>
+          <button type="submit" class="btn btn-primary">Підтвердити бронювання ✓</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Digital Ticket Voucher Modal -->
+  <div id="voucher-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="voucher-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="voucher-modal-title" class="modal-title">Ваш електронний квиток 🎉</h3>
+        <button class="modal-close-btn" aria-label="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="ticket-voucher">
+          <div class="ticket-header">
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: var(--color-cyan); text-transform: uppercase;">CineSphere Digital Voucher</div>
+              <div style="font-size: 13px; color: var(--color-text-secondary);">Покажіть на контролі входу</div>
+            </div>
+            <div id="voucher-code" class="ticket-code-badge">CS-00000</div>
+          </div>
+
+          <div class="ticket-body">
+            <div>
+              <h3 id="voucher-movie-title" style="font-size: 1.25rem; margin-bottom: 4px;">Фільм</h3>
+              <div id="voucher-hall-info" style="font-size: 13px; color: var(--color-cyan);">Зал та час</div>
+            </div>
+
+            <div>
+              <div style="font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px;">Обрані місця:</div>
+              <div id="voucher-seats-list" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+            </div>
+
+            <div class="ticket-status-row">
+              <div>Глядач: <strong id="voucher-customer-name" style="color: var(--color-text-primary);">Глядач</strong></div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="ticket-paid-badge">● Оплачено</span>
+                <div>Сплачено: <strong id="voucher-total-paid" style="color: var(--color-cyan);">0 грн</strong></div>
+              </div>
+            </div>
+
+            <!-- Perforation visual -->
+            <div class="ticket-perforation">
+              <div class="ticket-perforation-line"></div>
+            </div>
+
+            <!-- Barcode Simulation with Security Serial -->
+            <div class="ticket-barcode-wrap">
+              <div class="ticket-barcode" aria-hidden="true">
+                <span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span><span class="barcode-bar w-3"></span>
+                <span class="barcode-bar w-1"></span><span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span>
+                <span class="barcode-bar w-3"></span><span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span>
+                <span class="barcode-bar w-2"></span><span class="barcode-bar w-3"></span><span class="barcode-bar w-1"></span>
+                <span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span><span class="barcode-bar w-3"></span>
+              </div>
+              <div class="barcode-label">*CS-2026-ONLINE-TICKET-OFFICIAL*</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-print-voucher" class="btn btn-secondary">🖨 Роздрукувати квиток</button>
+        <button class="btn btn-primary btn-modal-cancel">Готово</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: My Bookings History Modal -->
+  <div id="bookings-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="bookings-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="bookings-modal-title" class="modal-title">Історія бронювань 🎟</h3>
+        <button class="modal-close-btn" aria-label="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="my-bookings-list" class="bookings-list">
+          <!-- Rendered by modalView.js -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-modal-cancel">Закрити</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Cinema Halls Overview Modal -->
+  <div id="halls-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="halls-modal-title">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 id="halls-modal-title" class="modal-title">Кінозали CineSphere 🏛</h3>
+        <button class="modal-close-btn" aria-label="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="halls-list-container">
+          <!-- Rendered dynamically by modalView.js -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-modal-cancel">Закрити</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toast-container" class="toast-container" aria-live="assertive"></div>
+
+  <!-- App Controller Module -->
+  <script type="module" src="js/app.js"></script>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container">
+      <p>CineSphere © 2026 • Лабораторна робота №2 з командної розробки ПЗ (LR2)</p>
+      <p style="margin-top: 4px;">Розробники: Же (Team Lead & Frontend 1), Ярік (JS & Logic), Льоша (Frontend 2 & Hall UI), Ілля (QA & Testing)</p>
+    </div>
+  </footer>
+
+</body>
+</html>
