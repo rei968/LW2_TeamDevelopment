@@ -30,3 +30,4 @@ coverage/
 screenshots/
 docs/screenshots/
 *.png
+.vs/
