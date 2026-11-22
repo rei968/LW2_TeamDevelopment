@@ -25,3 +25,8 @@ coverage/
 *.tmp
 *.temp
 *.log
+
+# Screenshots & Local Capture Artifacts
+screenshots/
+docs/screenshots/
+*.png
