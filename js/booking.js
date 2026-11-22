@@ -147,7 +147,7 @@ export const booking = {
 
     if (conflictingSeats.length > 0) {
       const conflictList = conflictingSeats.map(s => s.id || `Ряд ${s.row}, Місце ${s.seat || s.number}`).join(', ');
-      throw new Error(`Місце ${conflictList} вже зайняте (заброньовано іншим користувачем). Будь ласка, оберіть інші місця.`);
+      throw new Error(`Місце ${conflictList} вже зайняте (вже заброньовано іншим користувачем). Будь ласка, оберіть інші місця.`);
     }
 
     const showtime = db.getShowtimeById ? db.getShowtimeById(showtimeId) : null;

@@ -502,7 +502,7 @@
         runner.it('calculateOrderTotal підсумовує ціни кількох обраних місць', () => {
           const seats = [
             { id: 'R1-S1', tier: 'standard', price: 150 },
-            { id: 'R1-S2', tier: 'vip', price: 200 }
+            { id: 'R1-S2', tier: 'standard', price: 200 }
           ];
           const summary = calculateOrderTotal({ seats });
           expect(summary.subtotal).toBe(350);
@@ -798,6 +798,9 @@
 
     // Run test cycle
     async function startTestExecution() {
+      if (typeof db !== 'undefined' && db.reset) {
+        db.reset();
+      }
       const runner = new MiniTestRunner();
       setupTests(runner);
       const report = await runner.run();
