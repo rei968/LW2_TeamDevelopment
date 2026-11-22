@@ -39,16 +39,22 @@
   --color-text-muted: #64748b;
   --color-text-inverse: #090d16;
 
-  /* Cinema Seat Colors */
-  --seat-standard: #334155;
-  --seat-standard-border: #475569;
-  --seat-vip: #b45309;
-  --seat-vip-border: #f59e0b;
-  --seat-couch: #831843;
-  --seat-couch-border: #ec4899;
+  /* Cinema Seat Colors (Lyosha UI Tiers: Standard Blue, VIP Purple, Couches Gold) */
+  --seat-standard: #1e293b;
+  --seat-standard-border: #38bdf8;
+  --seat-standard-glow: 0 0 10px rgba(56, 189, 248, 0.25);
+  
+  --seat-vip: #4c1d95;
+  --seat-vip-border: #c084fc;
+  --seat-vip-glow: 0 0 12px rgba(192, 132, 252, 0.45);
+
+  --seat-couch: #78350f;
+  --seat-couch-border: #fbbf24;
+  --seat-couch-glow: 0 0 12px rgba(251, 191, 36, 0.4);
+
   --seat-selected: #38bdf8;
-  --seat-selected-glow: 0 0 12px rgba(56, 189, 248, 0.7);
-  --seat-occupied: #172033;
+  --seat-selected-glow: 0 0 16px rgba(56, 189, 248, 0.85);
+  --seat-occupied: #0f172a;
   --seat-occupied-border: #1e293b;
 
   /* Typography */
