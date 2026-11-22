@@ -1,21 +1,8 @@
-/**
- * CineSphere — Booking & Reservation Module
- * 
- * 👤 Відповідальний розробник: Ярік (@YaroslavYanushevych)
- * 🌿 Робоча гілка: feature/yarik-booking-logic
- * 
- * Модуль транзакційного створення броні з валідацією обов'язкових полів,
- * перевіркою ліміту до 6 квитків та захистом від подвійного бронювання (Double-Booking Prevention).
- */
-
 import { db } from './db.js';
 import { pricing } from './pricing.js';
 
 export const MAX_SEATS_PER_ORDER = 6;
 
-/**
- * Генерація унікального номера квитка у форматі CS-XXXXX
- */
 function generateBookingCode() {
   const existingBookings = db.getBookings ? db.getBookings() : [];
   const existingIds = new Set(existingBookings.map(b => b.id || b.bookingCode));
@@ -27,9 +14,6 @@ function generateBookingCode() {
   return code;
 }
 
-/**
- * Визначення категорії місця на основі конфігурації залу
- */
 function resolveSeatTier(rowNumber, hall) {
   if (!hall || !hall.seatTiers) return 'standard';
 
@@ -45,9 +29,6 @@ function resolveSeatTier(rowNumber, hall) {
 export const booking = {
   MAX_SEATS_PER_ORDER,
 
-  /**
-   * Отримання повної матриці сидінь залу для конкретного сеансу
-   */
   getSeatGrid(showtimeIdOrMovieId, showtimeStr = null) {
     let showtime = null;
 
@@ -96,9 +77,6 @@ export const booking = {
     return seats;
   },
 
-  /**
-   * Створення нового бронювання з валідацією
-   */
   createReservation(params = {}) {
     const { showtimeId, seats = [], customer = {}, promoCode = null, isStudent = false } = params;
 
@@ -131,13 +109,11 @@ export const booking = {
       throw new Error('Некоректний формат номера телефону (мінімум 9 цифр).');
     }
 
-    // Перевірка на дублікати місць у межах одного замовлення
     const uniqueSeatIds = new Set(seats.map(s => s.id || `R${s.row}-S${s.seat || s.number}`));
     if (uniqueSeatIds.size !== seats.length) {
       throw new Error('Одне й те саме місце не можна обрати двічі в одному замовленні.');
     }
 
-    // Захист від подвійного бронювання (Double-Booking Prevention)
     const occupiedSeatIds = db.getOccupiedSeatIds ? db.getOccupiedSeatIds(showtimeId) : [];
     const conflictingSeats = seats.filter(s => {
       const seatNum = s.seat || s.number;
@@ -220,9 +196,6 @@ export const booking = {
     return this.createReservation({ showtimeId, seats, customer, promoCode });
   },
 
-  /**
-   * Скасування існуючого бронювання
-   */
   cancelReservation(bookingId) {
     if (db.cancelBooking) {
       return db.cancelBooking(bookingId);
