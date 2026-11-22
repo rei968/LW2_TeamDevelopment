@@ -32,7 +32,7 @@
 
       <nav class="header-nav" aria-label="Головне меню">
         <a href="#" class="nav-link btn-nav-catalog active">Афіша</a>
-        <a href="#halls" class="nav-link btn-nav-catalog">Зали</a>
+        <a href="#halls" id="btn-nav-halls" class="nav-link">Зали</a>
         <a href="tests.html" class="nav-link" title="QA Automated Tests">🧪 Тести</a>
       </nav>
 
@@ -307,6 +307,24 @@
       <div class="modal-body">
         <div id="my-bookings-list" class="bookings-list">
           <!-- Rendered by modalView.js -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-modal-cancel">Закрити</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Cinema Halls Overview Modal -->
+  <div id="halls-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="halls-modal-title">
+    <div class="modal-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 id="halls-modal-title" class="modal-title">Кінозали CineSphere 🏛</h3>
+        <button class="modal-close-btn" aria-label="Закрити">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="halls-list-container">
+          <!-- Rendered dynamically by modalView.js -->
         </div>
       </div>
       <div class="modal-footer">

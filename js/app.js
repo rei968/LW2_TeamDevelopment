@@ -64,6 +64,15 @@ class CineSphereApp {
       });
     }
 
+    // Halls Nav Action
+    const hallsNavBtn = document.getElementById('btn-nav-halls');
+    if (hallsNavBtn) {
+      hallsNavBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.modalView.openHallsModal();
+      });
+    }
+
     // Reset Database Diagnostic Button
     const resetDbBtn = document.getElementById('btn-reset-db');
     if (resetDbBtn) {

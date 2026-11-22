@@ -14,6 +14,7 @@ export const modalView = {
     this.checkoutModal = document.getElementById('checkout-modal');
     this.voucherModal = document.getElementById('voucher-modal');
     this.bookingsModal = document.getElementById('bookings-modal');
+    this.hallsModal = document.getElementById('halls-modal');
 
     this.bindEvents();
   },
@@ -263,5 +264,76 @@ export const modalView = {
     }
 
     this.bookingsModal.classList.add('active');
+  },
+
+  /**
+   * Open Cinema Halls overview modal
+   */
+  openHallsModal() {
+    if (!this.hallsModal) return;
+
+    const listContainer = document.getElementById('halls-list-container');
+    if (listContainer) {
+      const halls = db.getHalls();
+      const showtimes = db.getShowtimes();
+      const movies = db.getMovies();
+
+      listContainer.innerHTML = halls.map(hall => {
+        const hallShowtimes = showtimes.filter(s => s.hallId === hall.id);
+        const totalSeats = hall.totalRows * hall.seatsPerRow;
+        const tierBadges = Object.keys(hall.seatTiers).map(t => {
+          const label = t === 'couches' ? 'Дивани' : t.toUpperCase();
+          const cls = t === 'vip' ? 'badge-amber' : (t === 'couches' ? 'badge-rose' : 'badge-cyan');
+          return `<span class="badge ${cls}">${label} (${hall.seatTiers[t].basePrice} грн)</span>`;
+        }).join(' ');
+
+        const showtimesHtml = hallShowtimes.map(st => {
+          const movie = movies.find(m => m.id === st.movieId);
+          const movieTitle = movie ? movie.title : 'Фільм';
+          return `
+            <button class="btn btn-outline btn-sm btn-select-hall-showtime" data-showtime-id="${st.id}" style="text-align: left; justify-content: space-between; display: flex; width: 100%; margin-top: 6px;">
+              <span><strong>${st.time}</strong> • ${movieTitle} (${st.format})</span>
+              <span style="color: var(--color-cyan); font-weight: 700;">Обрати зал ➔</span>
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <div class="hall-info-card" style="background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--spacing-4); margin-bottom: var(--spacing-4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: var(--color-text-primary); margin: 0;">🏛 ${hall.name}</h4>
+              <span class="badge badge-cyan">${totalSeats} місць (${hall.totalRows} рядів по ${hall.seatsPerRow})</span>
+            </div>
+            <p style="font-size: 13px; color: var(--color-text-secondary); margin: 0 0 10px 0;">
+              ${hall.id === 'hall-imax' ? 'Суперсучасний вигнутий екран IMAX Laser, проекція 4K та об’ємний звук Dolby Atmos.' : 'Затишний камерний зал із високою чіткістю зображення та багатоканальним звуком 7.1 Surround.'}
+            </p>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+              ${tierBadges}
+            </div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">
+              Найближчі сеанси в цьому залі:
+            </div>
+            <div class="hall-showtimes-list">
+              ${showtimesHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach click listeners to select showtime and jump directly into hall scheme
+      listContainer.querySelectorAll('.btn-select-hall-showtime').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const showtimeId = btn.dataset.showtimeId;
+          this.closeAll();
+          state.clearSeats();
+          state.setState({
+            selectedShowtimeId: showtimeId,
+            currentView: 'hall'
+          });
+        });
+      });
+    }
+
+    this.hallsModal.classList.add('active');
   }
 };
