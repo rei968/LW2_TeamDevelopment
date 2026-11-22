@@ -263,9 +263,12 @@
               <div id="voucher-seats-list" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--color-text-secondary); border-top: 1px solid var(--color-border); padding-top: 8px;">
+            <div class="ticket-status-row">
               <div>Глядач: <strong id="voucher-customer-name" style="color: var(--color-text-primary);">Глядач</strong></div>
-              <div>Сплачено: <strong id="voucher-total-paid" style="color: var(--color-cyan);">0 грн</strong></div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="ticket-paid-badge">● Оплачено</span>
+                <div>Сплачено: <strong id="voucher-total-paid" style="color: var(--color-cyan);">0 грн</strong></div>
+              </div>
             </div>
 
             <!-- Perforation visual -->
@@ -273,13 +276,16 @@
               <div class="ticket-perforation-line"></div>
             </div>
 
-            <!-- Barcode Simulation -->
-            <div class="ticket-barcode" aria-hidden="true">
-              <span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span><span class="barcode-bar w-3"></span>
-              <span class="barcode-bar w-1"></span><span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span>
-              <span class="barcode-bar w-3"></span><span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span>
-              <span class="barcode-bar w-2"></span><span class="barcode-bar w-3"></span><span class="barcode-bar w-1"></span>
-              <span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span><span class="barcode-bar w-3"></span>
+            <!-- Barcode Simulation with Security Serial -->
+            <div class="ticket-barcode-wrap">
+              <div class="ticket-barcode" aria-hidden="true">
+                <span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span><span class="barcode-bar w-3"></span>
+                <span class="barcode-bar w-1"></span><span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span>
+                <span class="barcode-bar w-3"></span><span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span>
+                <span class="barcode-bar w-2"></span><span class="barcode-bar w-3"></span><span class="barcode-bar w-1"></span>
+                <span class="barcode-bar w-2"></span><span class="barcode-bar w-1"></span><span class="barcode-bar w-3"></span>
+              </div>
+              <div class="barcode-label">*CS-2026-ONLINE-TICKET-OFFICIAL*</div>
             </div>
           </div>
         </div>
